@@ -5,29 +5,44 @@ st.set_page_config(page_title="Sistema de Vistoria Imobiliária", layout="wide")
 
 # --- LINKS DAS IMAGENS ---
 logo_url = "https://i.postimg.cc/9Myjqr69/Captura-de-tela-2026-02-24-160708.png" 
-background_image_url = "https://i.postimg.cc/ZnJXBjF5/image.png"
+# Substitua os links abaixo pelas fotos que você deseja nas laterais
+foto_esquerda = "https://i.postimg.cc/ZnJXBjF5/image.png" # Exemplo: Foto de uma sala
+foto_direita = "https://i.postimg.cc/XvnbywK0/image.png"  # Exemplo: Foto de uma fachada
 
-# --- ESTILIZAÇÃO CSS ---
+# --- ESTILIZAÇÃO CSS (LATERAIS) ---
 st.markdown(
     f"""
     <style>
     .stApp {{
-        background-image: url("{background_image_url}");
-        background-size: 20%; 
-        background-position: center;
-        background-repeat: repeat; 
-        background-attachment: fixed;
+        background: 
+            url("{foto_esquerda}") left center / 25% no-repeat fixed,
+            url("{foto_direita}") right center / 25% no-repeat fixed,
+            #f0f2f6; /* Cor de fundo caso as imagens não carreguem */
     }}
+    
+    /* Centraliza e organiza o corpo do formulário */
     .block-container {{
-        background-color: rgba(255, 255, 255, 0.95);
+        background-color: rgba(255, 255, 255, 0.98);
         padding: 40px !important;
         border-radius: 20px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        max-width: 900px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        max-width: 850px; /* Largura ideal para sobrar espaço nas fotos laterais */
         margin: auto;
+        border: 1px solid #ddd;
     }}
+
+    /* Ajuste para telas de celular (esconde as fotos laterais para não esmagar o texto) */
+    @media (max-width: 768px) {{
+        .stApp {{
+            background: #ffffff;
+        }}
+        .block-container {{
+            max-width: 95%;
+            padding: 15px !important;
+        }}
+    }}
+
     h1, h2, h3, p, span, label, .stMarkdown {{ color: #000000 !important; }}
-    .stCheckbox {{ margin-bottom: 15px; border: 1px solid #ddd; padding: 10px; border-radius: 5px; }}
     </style>
     """,
     unsafe_allow_html=True
