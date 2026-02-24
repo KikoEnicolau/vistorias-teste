@@ -14,24 +14,18 @@ st.markdown(
     <style>
     .stApp {{
         background-image: url("{background_image_url}");
-        background-size: cover;
+        background-size: 50%; /* Define que a imagem ocupa apenas 50% da largura - você pode mudar para 40% ou 60% */
         background-position: center;
+        background-repeat: repeat; 
         background-attachment: fixed;
     }}
     
-    /* Caixa para o conteúdo ficar legível sobre o fundo */
     .block-container {{
-        background-color: rgba(255, 255, 255, 0.92);
-        padding: 30px !important;
+        background-color: rgba(255, 255, 255, 0.95);
+        padding: 40px !important;
         border-radius: 20px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        margin-top: 50px;
-        margin-bottom: 50px;
-    }}
-
-    /* Garante que os textos e etiquetas sejam pretos */
-    h1, h2, h3, p, span, label, .stMarkdown {{
-        color: #000000 !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        max-width: 850px; /* Deixa o formulário mais centralizado */
     }}
     </style>
     """,
