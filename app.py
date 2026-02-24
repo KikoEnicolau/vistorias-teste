@@ -14,7 +14,7 @@ st.markdown(
     <style>
     .stApp {{
         background-image: url("{background_image_url}");
-        background-size: 50%; /* Define que a imagem ocupa apenas 50% da largura - você pode mudar para 40% ou 60% */
+        background-size: 30%; /* Define que a imagem ocupa apenas 50% da largura - você pode mudar para 40% ou 60% */
         background-position: center;
         background-repeat: repeat; 
         background-attachment: fixed;
