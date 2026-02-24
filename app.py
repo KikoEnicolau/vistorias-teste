@@ -3,11 +3,12 @@ import streamlit as st
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(page_title="Sistema de Vistoria Imobiliária", layout="wide")
 
-# --- LINKS DAS SUAS IMAGENS (IMGUR DIRECT LINKS) ---
-logo_url = "https://i.imgur.com/K6mE0K2.png"  # Link direto do seu logo
-background_image_url = "https://i.imgur.com/1GvHpxq.jpg" # Link direto da sua foto de fundo
+# --- LINKS DIRETOS DAS IMAGENS (CORRIGIDOS) ---
+# Extraídos diretamente para funcionarem no código
+logo_url = "https://i.imgur.com/K6mE0K2.png" 
+background_image_url = "https://i.imgur.com/1GvHpxq.jpeg"
 
-# --- ESTILIZAÇÃO CSS PERSONALIZADA ---
+# --- ESTILIZAÇÃO CSS PARA FUNDO E LOGO ---
 st.markdown(
     f"""
     <style>
@@ -18,9 +19,9 @@ st.markdown(
         background-attachment: fixed;
     }}
     
-    /* Caixa branca semi-transparente para o conteúdo não sumir no fundo */
+    /* Caixa para o conteúdo ficar legível sobre o fundo */
     .block-container {{
-        background-color: rgba(255, 255, 255, 0.90);
+        background-color: rgba(255, 255, 255, 0.92);
         padding: 30px !important;
         border-radius: 20px;
         box-shadow: 0 4px 15px rgba(0,0,0,0.3);
@@ -28,9 +29,9 @@ st.markdown(
         margin-bottom: 50px;
     }}
 
-    /* Ajuste para o texto ficar sempre legível */
-    h1, h2, h3, p, span, label {{
-        color: #31333F !important;
+    /* Garante que os textos e etiquetas sejam pretos */
+    h1, h2, h3, p, span, label, .stMarkdown {{
+        color: #000000 !important;
     }}
     </style>
     """,
@@ -38,12 +39,10 @@ st.markdown(
 )
 
 # --- EXIBIÇÃO DO LOGO ---
-col_logo, _ = st.columns([1, 2])
-with col_logo:
-    st.image(logo_url, width=250)
+st.image(logo_url, width=250)
 
 st.title("📋 Relatório de Vistoria de Imóveis")
-st.write("Preencha os campos abaixo para gerar o texto formatado do relatório.")
+st.write("Preencha os campos abaixo para gerar o relatório formatado.")
 
 # --- LISTA DE CÔMODOS ---
 comodos_config = [
@@ -122,7 +121,7 @@ for i, (nome, moveis) in enumerate(comodos_config, 1):
                     m_obs = st.text_input(f"Detalhes: {m}", key=f"m_obs_{m}_{i}")
                     lista_m_texto.append(f"- {m}: {m_obs if m_obs else 'em bom estado'}")
 
-            # --- CONSTRUÇÃO DO TEXTO DO CÔMODO ---
+            # --- CONSTRUÇÃO DO TEXTO ---
             txt = f"**{i}. {nome.upper()}**\n\n"
             txt += f"- Piso {p_mat} {p_est}, rodapé em piso {p_mat} {p_est}"
             if p_obs: txt += f", {p_obs}"
@@ -145,8 +144,12 @@ for i, (nome, moveis) in enumerate(comodos_config, 1):
             txt += ".\n\n"
             
             elétrica = []
-            if q_tom > 0: elétrica.append(f"{q_tom:02d} espelhos tomadas de plástico em bom estado")
-            if q_int > 0: elétrica.append(f"{q_int:02d} espelho interruptor de plástico em bom estado")
+            if q_tom > 0:
+                p_tom = "s" if q_tom > 1 else ""
+                elétrica.append(f"{q_tom:02d} espelho{p_tom} tomadas de plástico em bom estado")
+            if q_int > 0:
+                p_int = "es" if q_int > 1 else ""
+                elétrica.append(f"{q_int:02d} espelho{p_int} interruptor de plástico em bom estado")
             if elétrica: txt += f"- {' e '.join(elétrica)}.\n\n"
             
             if lista_m_texto:
