@@ -5,7 +5,7 @@ st.set_page_config(page_title="Sistema de Vistoria Imobiliária", layout="wide")
 
 # --- LINKS DAS IMAGENS ---
 logo_url = "https://i.imgur.com/K6mE0K2.png" 
-background_image_url = "https://i.imgur.com/1GvHpxq.jpeg"
+background_image_url = "https://i.postimg.cc/ZnJXBjF5/image.png"
 
 # --- ESTILIZAÇÃO CSS ---
 st.markdown(
