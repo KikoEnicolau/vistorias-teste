@@ -25,7 +25,7 @@ st.markdown(
         padding: 40px !important;
         border-radius: 20px;
         box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        max-width: 850px; /* Deixa o formulário mais centralizado */
+        max-width: 7000px; /* Deixa o formulário mais centralizado */
     }}
     </style>
     """,
