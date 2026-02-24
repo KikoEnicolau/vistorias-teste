@@ -4,7 +4,7 @@ import streamlit as st
 st.set_page_config(page_title="Sistema de Vistoria Imobiliária", layout="wide")
 
 # --- LINKS DAS IMAGENS ---
-logo_url = "https://i.imgur.com/K6mE0K2.png" 
+logo_url = "https://i.postimg.cc/9Myjqr69/Captura-de-tela-2026-02-24-160708.png" 
 background_image_url = "https://i.postimg.cc/ZnJXBjF5/image.png"
 
 # --- ESTILIZAÇÃO CSS ---
