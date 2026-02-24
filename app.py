@@ -1,9 +1,49 @@
 import streamlit as st
 
-st.set_page_config(page_title="Sistema de Vistoria", layout="wide")
+# --- CONFIGURAÇÃO DA PÁGINA ---
+st.set_page_config(page_title="Sistema de Vistoria Imobiliária", layout="wide")
+
+# --- LINKS DAS SUAS IMAGENS (IMGUR DIRECT LINKS) ---
+logo_url = "https://i.imgur.com/K6mE0K2.png"  # Link direto do seu logo
+background_image_url = "https://i.imgur.com/1GvHpxq.jpg" # Link direto da sua foto de fundo
+
+# --- ESTILIZAÇÃO CSS PERSONALIZADA ---
+st.markdown(
+    f"""
+    <style>
+    .stApp {{
+        background-image: url("{background_image_url}");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+    }}
+    
+    /* Caixa branca semi-transparente para o conteúdo não sumir no fundo */
+    .block-container {{
+        background-color: rgba(255, 255, 255, 0.90);
+        padding: 30px !important;
+        border-radius: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        margin-top: 50px;
+        margin-bottom: 50px;
+    }}
+
+    /* Ajuste para o texto ficar sempre legível */
+    h1, h2, h3, p, span, label {{
+        color: #31333F !important;
+    }}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# --- EXIBIÇÃO DO LOGO ---
+col_logo, _ = st.columns([1, 2])
+with col_logo:
+    st.image(logo_url, width=250)
 
 st.title("📋 Relatório de Vistoria de Imóveis")
-st.write("Preencha os campos abaixo para gerar o texto formatado.")
+st.write("Preencha os campos abaixo para gerar o texto formatado do relatório.")
 
 # --- LISTA DE CÔMODOS ---
 comodos_config = [
