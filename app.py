@@ -23,7 +23,7 @@ st.markdown(
         border-radius: 20px;
         box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         margin-top: 20px;
-        max-width: 1000px;
+        max-width: 700px;
     }}
     h1, h2, h3, p, span, label, .stMarkdown {{ color: #000000 !important; }}
     </style>
