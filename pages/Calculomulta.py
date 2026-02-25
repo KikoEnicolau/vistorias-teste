@@ -1,7 +1,8 @@
 import streamlit as st
+from datetime import date
 
 # --- CONFIGURAÇÃO DA PÁGINA ---
-st.set_page_config(page_title="Cálculo de Multa por Dias", layout="wide")
+st.set_page_config(page_title="Cálculo de Multa por Datas", layout="wide")
 
 # --- LINKS DAS IMAGENS ---
 logo_url = "https://i.postimg.cc/9Myjqr69/Captura-de-tela-2026-02-24-160708.png" 
@@ -33,59 +34,67 @@ st.markdown(
 )
 
 st.image(logo_url, width=220)
-st.title("🧮 Cálculo de Multa Rescisória (Por Dias)")
-st.write("Cálculo proporcional exato considerando todos os meses com 30 dias.")
+st.title("🧮 Calculadora de Multa (Por Período)")
+st.write("Cálculo automático de dias faltantes baseado em meses de 30 dias.")
 
-with st.form("calculo_multa_dias"):
+with st.form("calculo_datas"):
     valor_aluguel = st.number_input("Valor do Aluguel (R$)", min_value=0.0, step=100.0, value=1500.0)
     
-    col1, col2 = st.columns(2)
-    meses_contrato = col1.number_input("Duração do Contrato (Meses)", min_value=1, value=30)
-    multa_pactuada = col2.number_input("Multa (Qtd. Aluguéis)", min_value=1, value=3)
-    
+    c1, c2 = st.columns(2)
+    meses_contrato_total = c1.number_input("Duração total do contrato (Meses)", min_value=1, value=30)
+    multa_pactuada = c2.number_input("Multa rescisória (Qtd. Aluguéis)", min_value=1, value=3)
+
     st.markdown("---")
-    st.write("**Tempo Cumprido:**")
-    c3, c4 = st.columns(2)
-    meses_pagos = c3.number_input("Meses inteiros pagos", min_value=0, value=12)
-    dias_extras = c4.number_input("Dias extras do mês atual", min_value=0, max_value=30, value=0)
+    st.subheader("📅 Período de Desocupação")
     
-    calcular = st.form_submit_button("Calcular Multa Exata")
+    col_d1, col_d2 = st.columns(2)
+    data_saida = col_d1.date_input("Data da entrega das chaves (Saída)", date.today())
+    data_fim_contrato = col_d2.date_input("Data do fim do contrato (Findar)", date.today())
+    
+    calcular = st.form_submit_button("Calcular Multa Proporcional")
 
 if calcular:
-    # Lógica baseada em meses de 30 dias
-    total_dias_contrato = meses_contrato * 30
-    dias_cumpridos = (meses_pagos * 30) + dias_extras
-    dias_restantes = total_dias_contrato - dias_cumpridos
-    
-    if dias_restantes <= 0:
-        st.success("✅ O contrato já foi cumprido integralmente ou ultrapassado. Sem multa!")
+    if data_saida >= data_fim_contrato:
+        st.success("✅ A data de saída é posterior ou igual ao fim do contrato. Não há multa!")
     else:
-        multa_total_cheia = valor_aluguel * multa_pactuada
-        # Cálculo: (Multa / Total de Dias) * Dias Restantes
-        valor_multa_proporcional = (multa_total_cheia / total_dias_contrato) * dias_restantes
+        # Lógica para cálculo considerando todos os meses como 30 dias
+        # 1. Calculamos a diferença total em dias calendários primeiro
+        diff = data_fim_contrato - data_saida
         
+        # 2. Ajustamos para a regra de meses comerciais (30 dias)
+        # Calculamos quantos meses inteiros e dias sobram
+        anos = data_fim_contrato.year - data_saida.year
+        meses = data_fim_contrato.month - data_saida.month
+        dias = data_fim_contrato.day - data_saida.day
+        
+        total_meses_restantes = (anos * 12) + meses
+        
+        # Ajuste dos dias para a regra de 30 dias
+        dias_restantes_comerciais = (total_meses_restantes * 30) + dias
+        
+        # Valores Totais
+        dias_totais_contrato = meses_contrato_total * 30
+        multa_cheia = valor_aluguel * multa_pactuada
+        
+        # Valor Final
+        valor_multa = (multa_cheia / dias_totais_contrato) * dias_restantes_comerciais
+
         st.divider()
-        st.subheader("📊 Resultado Detalhado")
+        st.subheader("📊 Resultado")
         
-        m1, m2 = st.columns(2)
-        m1.metric("Dias Restantes", f"{dias_restantes} dias")
-        m2.metric("Valor da Multa", f"R$ {valor_multa_proporcional:,.2f}")
+        res1, res2 = st.columns(2)
+        res1.metric("Dias faltantes", f"{dias_restantes_comerciais} dias")
+        res2.metric("Valor da Multa", f"R$ {valor_multa:,.2f}")
         
-        # Detalhamento para o cliente
-        texto_detalhado = (
-            f"O contrato possui {total_dias_contrato} dias totais ({meses_contrato} meses).\n"
-            f"Foram cumpridos {dias_cumpridos} dias.\n"
-            f"A multa é calculada sobre os {dias_restantes} dias que faltam."
-        )
-        st.info(texto_detalhado)
+        st.info(f"O cálculo considerou que faltam **{dias_restantes_comerciais} dias** para o fim do contrato (base 30 dias/mês).")
 
         # Texto para WhatsApp
         texto_whatsapp = (
             f"Prezado cliente,\n\n"
-            f"Segue o cálculo da multa rescisória proporcional:\n"
-            f"- Aluguel: R$ {valor_aluguel:,.2f}\n"
-            f"- Prazo faltante: {dias_restantes} dias\n"
-            f"- Valor a pagar: *R$ {valor_multa_proporcional:,.2f}*\n\n"
-            f"Cálculo baseado na Lei 8.245/91."
+            f"Conforme vistoria e entrega das chaves em {data_saida.strftime('%d/%m/%Y')}:\n"
+            f"- Data final do contrato: {data_fim_contrato.strftime('%d/%m/%Y')}\n"
+            f"- Dias proporcionais faltantes: {dias_restantes_comerciais} dias\n"
+            f"- Valor da multa rescisória: *R$ {valor_multa:,.2f}*\n\n"
+            f"Cálculo baseado em meses comerciais (30 dias)."
         )
-        st.text_area("Cópia para WhatsApp:", texto_whatsapp, height=150)
+        st.text_area("Cópia para WhatsApp:", texto_whatsapp, height=180)
