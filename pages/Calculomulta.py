@@ -34,67 +34,69 @@ st.markdown(
 )
 
 st.image(logo_url, width=220)
-st.title("🧮 Calculadora de Multa (Por Período)")
-st.write("Cálculo automático de dias faltantes baseado em meses de 30 dias.")
+st.title("🧮 Calculadora de Multa Rescisória")
+st.write("Cálculo baseado em meses comerciais de 30 dias.")
 
+# Início do formulário
 with st.form("calculo_datas"):
-    valor_aluguel = st.number_input("Valor do Aluguel (R$)", min_value=0.0, step=100.0, value=1500.0)
+    
+    # 1. PERÍODO DE DESOCUPAÇÃO (AGORA EM CIMA)
+    st.subheader("📅 1. Período de Desocupação")
+    col_d1, col_d2 = st.columns(2)
+    
+    # format="DD/MM/YYYY" coloca o calendário no padrão brasileiro
+    data_saida = col_d1.date_input("Data da entrega das chaves", value=date.today(), format="DD/MM/YYYY")
+    data_fim_contrato = col_d2.date_input("Data do fim do contrato", value=date.today(), format="DD/MM/YYYY")
+    
+    st.markdown("---")
+    
+    # 2. VALORES E CONTRATO (AGORA EMBAIXO)
+    st.subheader("💰 2. Valores do Contrato")
+    valor_aluguel = st.number_input("Valor do Aluguel Mensal (R$)", min_value=0.0, step=100.0, value=1500.0)
     
     c1, c2 = st.columns(2)
     meses_contrato_total = c1.number_input("Duração total do contrato (Meses)", min_value=1, value=30)
-    multa_pactuada = c2.number_input("Multa rescisória (Qtd. Aluguéis)", min_value=1, value=3)
-
-    st.markdown("---")
-    st.subheader("📅 Período de Desocupação")
-    
-    col_d1, col_d2 = st.columns(2)
-    data_saida = col_d1.date_input("Data da entrega das chaves (Saída)", date.today())
-    data_fim_contrato = col_d2.date_input("Data do fim do contrato (Findar)", date.today())
+    multa_pactuada = c2.number_input("Multa em contrato (Qtd. Aluguéis)", min_value=1, value=3)
     
     calcular = st.form_submit_button("Calcular Multa Proporcional")
 
 if calcular:
     if data_saida >= data_fim_contrato:
-        st.success("✅ A data de saída é posterior ou igual ao fim do contrato. Não há multa!")
+        st.success("✅ A data de saída é posterior ou igual ao fim do contrato. Não há multa a pagar!")
     else:
-        # Lógica para cálculo considerando todos os meses como 30 dias
-        # 1. Calculamos a diferença total em dias calendários primeiro
-        diff = data_fim_contrato - data_saida
-        
-        # 2. Ajustamos para a regra de meses comerciais (30 dias)
-        # Calculamos quantos meses inteiros e dias sobram
+        # Lógica de cálculo (Meses comerciais de 30 dias)
         anos = data_fim_contrato.year - data_saida.year
         meses = data_fim_contrato.month - data_saida.month
         dias = data_fim_contrato.day - data_saida.day
         
         total_meses_restantes = (anos * 12) + meses
-        
-        # Ajuste dos dias para a regra de 30 dias
         dias_restantes_comerciais = (total_meses_restantes * 30) + dias
         
-        # Valores Totais
         dias_totais_contrato = meses_contrato_total * 30
         multa_cheia = valor_aluguel * multa_pactuada
         
-        # Valor Final
+        # Valor Proporcional
         valor_multa = (multa_cheia / dias_totais_contrato) * dias_restantes_comerciais
 
         st.divider()
-        st.subheader("📊 Resultado")
+        st.subheader("📊 Resultado da Rescisão")
         
         res1, res2 = st.columns(2)
         res1.metric("Dias faltantes", f"{dias_restantes_comerciais} dias")
         res2.metric("Valor da Multa", f"R$ {valor_multa:,.2f}")
         
-        st.info(f"O cálculo considerou que faltam **{dias_restantes_comerciais} dias** para o fim do contrato (base 30 dias/mês).")
+        # Formatação das datas para o texto final
+        data_saida_br = data_saida.strftime('%d/%m/%Y')
+        data_fim_br = data_fim_contrato.strftime('%d/%m/%Y')
 
-        # Texto para WhatsApp
+        # Texto pronto para enviar
         texto_whatsapp = (
             f"Prezado cliente,\n\n"
-            f"Conforme vistoria e entrega das chaves em {data_saida.strftime('%d/%m/%Y')}:\n"
-            f"- Data final do contrato: {data_fim_contrato.strftime('%d/%m/%Y')}\n"
-            f"- Dias proporcionais faltantes: {dias_restantes_comerciais} dias\n"
-            f"- Valor da multa rescisória: *R$ {valor_multa:,.2f}*\n\n"
-            f"Cálculo baseado em meses comerciais (30 dias)."
+            f"Conforme solicitado, segue o cálculo da multa rescisória proporcional:\n\n"
+            f"📍 Entrega das chaves: {data_saida_br}\n"
+            f"📍 Final do contrato: {data_fim_br}\n"
+            f"⏳ Dias proporcionais restantes: {dias_restantes_comerciais} dias\n"
+            f"💵 Valor total da multa: *R$ {valor_multa:,.2f}*\n\n"
+            f"Cálculo realizado considerando meses de 30 dias."
         )
-        st.text_area("Cópia para WhatsApp:", texto_whatsapp, height=180)
+        st.text_area("Cópia para WhatsApp/E-mail:", texto_whatsapp, height=200)
