@@ -51,6 +51,10 @@ st.markdown(
 st.image(logo_url, width=220)
 st.title("📋 Vistoria Imobiliária Dinâmica")
 
+# --- BOTÃO DE NAVEGAÇÃO RÁPIDA ---
+st.page_link("pages/Calculomulta.py", label="Ir para Calculadora de Multa", icon="🧮")
+st.markdown("---")
+
 # --- 1. CONFIGURAÇÃO DO IMÓVEL ---
 st.header("1. Configuração do Imóvel")
 col_dorm, col_suit = st.columns(2)
