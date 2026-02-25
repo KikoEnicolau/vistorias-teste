@@ -6,8 +6,8 @@ st.set_page_config(page_title="Cálculo de Multa por Datas", layout="wide")
 
 # --- LINKS DAS IMAGENS ---
 logo_url = "https://i.postimg.cc/9Myjqr69/Captura-de-tela-2026-02-24-160708.png" 
-foto_esquerda = "https://i.postimg.cc/ZnJXBjF5/image.png" 
-foto_direita = "https://i.postimg.cc/ZnJXBjF5/image.png"
+foto_esquerda = "https://i.postimg.cc/VspCLZj3/fernandopolis.png" 
+foto_direita = "https://i.postimg.cc/WzXY0LsR/eve.png"
 
 # --- ESTILIZAÇÃO CSS ---
 st.markdown(
