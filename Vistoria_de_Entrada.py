@@ -50,53 +50,57 @@ num_suites = col_suit.number_input("Quantas Suítes?", min_value=0, value=0, ste
 
 # --- FUNÇÃO AUXILIAR PARA CÔMODOS COMPLETOS ---
 def formulario_base(id_chave, nome_exibicao):
-    st.markdown(f"**Configuração de {nome_exibicao}**")
+    st.markdown(f"### 🏠 {nome_exibicao}")
+    
+    opcoes = ["Bom estado", "Novo", "Usado"]
+    
+    # --- PISO ---
+    st.markdown("**1. Piso**")
     c1, c2 = st.columns(2)
-    p_mat = c1.text_input("Tipo Piso", value="frio", key=f"p_mat_{id_chave}")
-    p_est = c2.selectbox("Estado Piso", ["novo", "em bom estado", "usado"], key=f"p_est_{id_chave}")
-    p_obs = st.text_input("Obs. Piso (ex: riscos)", key=f"p_obs_{id_chave}")
+    p_mat = c1.text_input("Tipo de Piso", value="Cerâmico", key=f"p_mat_{id_chave}")
+    p_est = c2.selectbox("Estado do Piso", opcoes, key=f"p_est_{id_chave}")
+    p_obs = st.text_input("Obs. do Piso", placeholder="Ex: Riscos leves, peça trincada...", key=f"p_obs_{id_chave}")
+
+    # --- PAREDES E TETO ---
+    st.markdown("---")
+    st.markdown("**2. Paredes e Teto**")
     c3, c4 = st.columns(2)
-    par_tipo = c3.selectbox("Tipo Parede", ["alvenaria", "azulejos até o teto"], key=f"par_tipo_{id_chave}")
-    par_est = c4.selectbox("Estado Parede", ["pintura nova", "pintura em bom estado", "pintura usada"], key=f"par_est_{id_chave}")
-    par_cor = st.text_input("Cor Parede", value="bege", key=f"par_cor_{id_chave}")
-    par_obs = st.text_input("Obs. Parede", key=f"par_obs_{id_chave}")
+    par_est = c3.selectbox("Estado das Paredes", opcoes, key=f"par_est_{id_chave}")
+    tet_est = c4.selectbox("Estado do Teto", opcoes, key=f"tet_est_{id_chave}")
+    pint_obs = st.text_input("Obs. de Pintura/Estrutura", placeholder="Ex: Furos de prego, manchas...", key=f"pint_obs_{id_chave}")
+
+    # --- PORTAS E JANELAS ---
+    st.markdown("---")
+    st.markdown("**3. Portas, Janelas e Vidros**")
     c5, c6 = st.columns(2)
-    t_mat = c5.text_input("Material Teto", value="gesso", key=f"t_mat_{id_chave}")
-    t_cor = c6.text_input("Cor Teto", value="branca", key=f"t_cor_{id_chave}")
+    por_est = c5.selectbox("Estado da Porta/Maçaneta", opcoes, key=f"por_est_{id_chave}")
+    jan_est = c6.selectbox("Estado da Janela/Vidros", opcoes, key=f"jan_est_{id_chave}")
+    esq_obs = st.text_input("Obs. de Esquadrias", placeholder="Ex: Vidro riscado, tranca dura...", key=f"esq_obs_{id_chave}")
+
+    # --- ELÉTRICA ---
+    st.markdown("---")
+    st.markdown("**4. Elétrica e Iluminação**")
     c7, c8 = st.columns(2)
-    t_mold = c7.selectbox("Moldura", ["com moldura de gesso", "sem moldura"], key=f"t_mold_{id_chave}")
-    t_est = c8.selectbox("Estado Teto", ["pintura nova", "pintura usada"], key=f"t_est_{id_chave}")
-    t_obs = st.text_input("Obs. Teto (Iluminação/Lâmpadas)", key=f"t_obs_{id_chave}")
-    porta_txt = ""
-    if "sacada" not in id_chave:
-        st.markdown("---")
-        c9, c10 = st.columns(2)
-        por_mat = c9.text_input("Material Porta", value="madeira", key=f"por_mat_{id_chave}")
-        por_cor = c10.text_input("Cor Porta", value="branca", key=f"por_cor_{id_chave}")
-        c11, c12 = st.columns(2)
-        por_pint = c11.selectbox("Pintura Porta", ["pintura nova", "pintura usada", "envernizada"], key=f"por_pint_{id_chave}")
-        por_cond = c12.selectbox("Condição Porta", ["nova", "em bom estado", "usada"], key=f"por_cond_{id_chave}")
-        por_obs = st.text_input("Obs. Porta", key=f"por_obs_{id_chave}")
-        porta_txt = f"- Porta de {por_mat} {por_cond}, na cor {por_cor}, {por_pint}. {por_obs}\n\n"
+    ele_est = c7.selectbox("Estado de Tomadas/Interruptores", opcoes, key=f"ele_est_{id_chave}")
+    ilu_est = c8.selectbox("Estado da Iluminação/Bocais", opcoes, key=f"ilu_est_{id_chave}")
+    ele_obs = st.text_input("Obs. Elétrica", placeholder="Ex: Campainha não funciona, tampa solta...", key=f"ele_obs_{id_chave}")
+
+    # --- HIDRÁULICA E METAIS (Para Banheiros/Cozinha) ---
     st.markdown("---")
-    c13, c14 = st.columns(2)
-    jan_mat = c13.text_input("Material Janela", value="alumínio", key=f"jan_mat_{id_chave}")
-    jan_est = c14.selectbox("Estado Janela", ["nova", "em bom estado", "usada"], key=f"jan_est_{id_chave}")
-    jan_obs = st.text_input("Obs. Janela (Vidros, trancas, telas)", key=f"jan_obs_{id_chave}")
-    st.markdown("---")
-    c15, c16 = st.columns(2)
-    q_tom = c15.number_input("Qtd Tomadas", min_value=0, step=1, key=f"q_tom_{id_chave}")
-    q_int = c16.number_input("Qtd Interruptores", min_value=0, step=1, key=f"q_int_{id_chave}")
+    st.markdown("**5. Hidráulica, Metais e Louças**")
+    c9, c10 = st.columns(2)
+    met_est = c9.selectbox("Estado de Torneiras/Registros", opcoes, key=f"met_est_{id_chave}")
+    lou_est = c10.selectbox("Estado de Vasos/Pias/Tanques", opcoes, key=f"lou_est_{id_chave}")
+    hid_obs = st.text_input("Obs. Hidráulica", placeholder="Ex: Vazamento leve, ralo entupido...", key=f"hid_obs_{id_chave}")
+
+    # --- TEXTO FINAL DO RELATÓRIO ---
     res = f"**{nome_exibicao.upper()}**\n"
-    res += f"- Piso {p_mat} {p_est}, rodapé em piso {p_mat} {p_est}. {p_obs}\n"
-    res += f"- Paredes em {par_tipo} na cor {par_cor}, {par_est}. {par_obs}\n"
-    res += f"- Teto em {t_mat}, na cor {t_cor}, {t_mold}, {t_est}. {t_obs}\n"
-    if porta_txt: res += porta_txt
-    res += f"- Janela de {jan_mat} {jan_est}. {jan_obs}\n"
-    elet = []
-    if q_tom > 0: elet.append(f"{q_tom:02d} espelhos tomadas de plástico em bom estado")
-    if q_int > 0: elet.append(f"{q_int:02d} espelho interruptor de plástico em bom estado")
-    if elet: res += f"- {' e '.join(elet)}.\n"
+    res += f"- PISO: {p_mat} em {p_est.lower()}. {p_obs}\n"
+    res += f"- PAREDES/TETO: Paredes em {par_est.lower()} e teto em {tet_est.lower()}. {pint_obs}\n"
+    res += f"- PORTAS/JANELAS: Portas em {por_est.lower()} e janelas em {jan_est.lower()}. {esq_obs}\n"
+    res += f"- ELÉTRICA: Tomadas em {ele_est.lower()} e iluminação em {ilu_est.lower()}. {ele_obs}\n"
+    res += f"- HIDRÁULICA: Metais em {met_est.lower()} e louças em {lou_est.lower()}. {hid_obs}\n"
+    
     return res + "\n"
 
 def criar_secao_comodo(id_chave, nome_exibicao, tem_sacada=True, eh_suite=False):
