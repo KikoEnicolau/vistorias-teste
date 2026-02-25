@@ -1,13 +1,13 @@
 import streamlit as st
 
 # --- CONFIGURAÇÃO DA PÁGINA ---
-st.set_page_config(page_title="Sistema de Vistoria Imobiliária", layout="wide")
+# O 'page_title' muda o nome que aparece na aba do navegador
+st.set_page_config(page_title="Vistoria de Entrada", layout="wide")
 
 # --- LINKS DAS IMAGENS ---
 logo_url = "https://i.postimg.cc/9Myjqr69/Captura-de-tela-2026-02-24-160708.png" 
-# Substitua os links abaixo pelas fotos que você deseja nas laterais
-foto_esquerda = "https://i.postimg.cc/ZnJXBjF5/image.png" # Exemplo: Foto de uma sala
-foto_direita = "https://i.postimg.cc/XvnbywK0/image.png"  # Exemplo: Foto de uma fachada
+foto_esquerda = "https://i.postimg.cc/ZnJXBjF5/image.png" 
+foto_direita = "https://i.postimg.cc/XvnbywK0/image.png"
 
 # --- ESTILIZAÇÃO CSS (LATERAIS) ---
 st.markdown(
@@ -17,21 +17,19 @@ st.markdown(
         background: 
             url("{foto_esquerda}") left center / 25% no-repeat fixed,
             url("{foto_direita}") right center / 25% no-repeat fixed,
-            #f0f2f6; /* Cor de fundo caso as imagens não carreguem */
+            #f0f2f6; 
     }}
     
-    /* Centraliza e organiza o corpo do formulário */
     .block-container {{
         background-color: rgba(255, 255, 255, 0.98);
         padding: 40px !important;
         border-radius: 20px;
         box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        max-width: 850px; /* Largura ideal para sobrar espaço nas fotos laterais */
+        max-width: 850px; 
         margin: auto;
         border: 1px solid #ddd;
     }}
 
-    /* Ajuste para telas de celular (esconde as fotos laterais para não esmagar o texto) */
     @media (max-width: 768px) {{
         .stApp {{
             background: #ffffff;
@@ -49,10 +47,11 @@ st.markdown(
 )
 
 st.image(logo_url, width=220)
-st.title("📋 Vistoria Imobiliária Dinâmica")
+st.title("📋 Vistoria de Entrada")
 
 # --- BOTÃO DE NAVEGAÇÃO RÁPIDA ---
-st.page_link("pages/Calculomulta.py", label="Ir para Calculadora de Multa", icon="🧮")
+# IMPORTANTE: Se você renomeou o arquivo da multa para "Calculo_de_multa.py", o link abaixo deve ser igual
+st.page_link("pages/Calculomulta.py", label="Ir para Calculo de multa", icon="🧮")
 st.markdown("---")
 
 # --- 1. CONFIGURAÇÃO DO IMÓVEL ---
@@ -87,7 +86,7 @@ def formulario_base(id_chave, nome_exibicao):
     t_est = c8.selectbox("Estado Teto", ["pintura nova", "pintura usada"], key=f"t_est_{id_chave}")
     t_obs = st.text_input("Obs. Teto (Iluminação/Lâmpadas)", key=f"t_obs_{id_chave}")
 
-    # PORTA (Opcional para Sacadas)
+    # PORTA
     porta_txt = ""
     if "sacada" not in id_chave:
         st.markdown("---")
