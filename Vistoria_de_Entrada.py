@@ -14,7 +14,7 @@ st.markdown("""
 
 # --- FUNÇÃO DO FORMULÁRIO ---
 def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
-    titulo = f"📍 {nome_exibicao.upper()}" if not eh_sacada else f"🌅 SACADA ({nome_exibicao.upper()})"
+    titulo = f"📍 {nome_exibicao.upper()}" if not eh_sacada else f"🌅 SACADA DO(A) {nome_exibicao.upper()}"
     
     with st.expander(titulo, expanded=True):
         opcoes = ["Bom estado", "Novo", "Usado"]
@@ -40,7 +40,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             tet_cor = st.text_input("Cor Teto", value="Branco", key=f"tet_cor_in_{id_chave}")
             tet_est = st.selectbox("Estado Teto", opcoes, key=f"tet_est_in_{id_chave}")
 
-        # --- PORTAS (Omitir se for apenas sacada, a menos que queira manter) ---
+        # --- PORTAS ---
         st.markdown("---")
         st.markdown("**3. Porta e Batente**")
         cp1, cp2, cp3 = st.columns(3)
@@ -94,7 +94,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
         
         ilu_est = st.selectbox("Estado Geral Iluminação", opcoes_ilum, key=f"ilu_e_s_{id_chave}")
 
-        # --- RALO (Aparece se for sacada ou área úmida) ---
+        # --- HIDRÁULICA / RALO ---
         res_hidro = ""
         molhados = ["cozinha", "banheiro", "serviço", "suíte", "lavabo", "lavanderia"]
         if eh_sacada or any(x in nome_exibicao.lower() for x in molhados):
@@ -126,8 +126,8 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
         else:
             txt_ilum += f" Lâmpadas funcionando: {q_func} / Queimada(s): {q_queim}."
 
-    prefixo = "SACADA DO CÔMODO" if eh_sacada else ""
-    res = f"### {prefixo} {nome_exibicao.upper()}\n"
+    cabecalho = f"### SACADA DO(A) {nome_exibicao.upper()}" if eh_sacada else f"### {nome_exibicao.upper()}"
+    res = f"{cabecalho}\n"
     res += f"- PISO: {p_mat} na cor {p_cor} em {p_est.lower()}. {p_obs}\n"
     res += f"- PAREDES: Cor {par_cor}, {par_est.lower()}. TETO: Cor {tet_cor}, {tet_est.lower()}.\n"
     res += f"- PORTA: {por_mat} na cor {por_cor}, em {por_est.lower()}. Maçaneta {fec_est.lower()}.\n"
@@ -141,44 +141,52 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
 # --- INTERFACE PRINCIPAL ---
 st.title("📋 Vistoria de Entrada Profissional")
 
-with st.container():
-    st.subheader("⚙️ Configuração do Imóvel")
-    c_config1, c_config2 = st.columns(2)
-    qtd_quartos = c_config1.number_input("Quantos Quartos (Simples)?", 0, 10, value=1)
-    qtd_suites = c_config2.number_input("Quantas Suítes?", 0, 10, value=1)
+# --- CONFIGURAÇÃO INICIAL ---
+with st.sidebar:
+    st.header("⚙️ Configuração do Imóvel")
+    q_quartos = st.number_input("Quantos Quartos (Simples)?", 0, 10, value=1)
+    q_suites = st.number_input("Quantas Suítes?", 0, 10, value=1)
     
-    outros = st.multiselect("Outros Cômodos:", 
+    outros_comodos = st.multiselect("Outros Cômodos:", 
                            ["Sala", "Cozinha", "Banheiro Social", "Área de Serviço", "Varanda", "Garagem"],
                            default=["Sala", "Cozinha", "Banheiro Social"])
 
-lista_comodos = []
-if "Sala" in outros: 
-    lista_comodos.append(("sala_0", "Sala", False))
-    if st.sidebar.checkbox("Adicionar Sacada na Sala?", key="chk_s_sala"):
-        lista_comodos.append(("sacada_sala", "Sala", True))
-
-for i in range(int(qtd_quartos)):
-    nome = f"Quarto {i+1}"
-    lista_comodos.append((f"quarto_{i+1}", nome, False))
-    if st.sidebar.checkbox(f"Sacada no {nome}?", key=f"chk_s_q_{i}"):
-        lista_comodos.append((f"sacada_q_{i+1}", nome, True))
-
-for i in range(int(qtd_suites)):
-    nome = f"Suíte {i+1}"
-    lista_comodos.append((f"suite_{i+1}", nome, False))
-    if st.sidebar.checkbox(f"Sacada na {nome}?", key=f"chk_s_s_{i}"):
-        lista_comodos.append((f"sacada_s_{i+1}", nome, True))
-
-# Outros cômodos padrões
-for item in ["Cozinha", "Banheiro Social", "Área de Serviço", "Varanda", "Garagem"]:
-    if item in outros:
-        lista_comodos.append((item.lower().replace(" ", "_"), item, False))
-
 relatorio_completo = ""
-for id_c, nome_c, eh_sacada in lista_comodos:
-    relatorio_completo += formulario_base(id_c, nome_c, eh_sacada)
 
-st.markdown("---")
+# --- PROCESSAMENTO DOS CÔMODOS ---
+# Sala
+if "Sala" in outros_comodos:
+    tem_sacada_sala = st.checkbox("A Sala possui sacada?", key="chk_sac_sala")
+    relatorio_completo += formulario_base("sala_0", "Sala")
+    if tem_sacada_sala:
+        relatorio_completo += formulario_base("sacada_sala", "Sala", eh_sacada=True)
+    st.markdown("---")
+
+# Quartos
+for i in range(int(q_quartos)):
+    nome_q = f"Quarto {i+1}"
+    tem_sacada_q = st.checkbox(f"O {nome_q} possui sacada?", key=f"chk_sac_q_{i}")
+    relatorio_completo += formulario_base(f"quarto_{i+1}", nome_q)
+    if tem_sacada_q:
+        relatorio_completo += formulario_base(f"sacada_q_{i+1}", nome_q, eh_sacada=True)
+    st.markdown("---")
+
+# Suítes
+for i in range(int(q_suites)):
+    nome_s = f"Suíte {i+1}"
+    tem_sacada_s = st.checkbox(f"A {nome_s} possui sacada?", key=f"chk_sac_s_{i}")
+    relatorio_completo += formulario_base(f"suite_{i+1}", nome_s)
+    if tem_sacada_s:
+        relatorio_completo += formulario_base(f"sacada_s_{i+1}", nome_s, eh_sacada=True)
+    st.markdown("---")
+
+# Demais áreas
+for item in ["Cozinha", "Banheiro Social", "Área de Serviço", "Varanda", "Garagem"]:
+    if item in outros_comodos and item != "Sala":
+        relatorio_completo += formulario_base(item.lower().replace(" ", "_"), item)
+        st.markdown("---")
+
+# --- ÁREA FINAL ---
 st.header("📄 Relatório Finalizado")
 if relatorio_completo:
     st.code(relatorio_completo, language="markdown")
