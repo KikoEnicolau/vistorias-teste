@@ -85,7 +85,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             por_est = cp3.selectbox("Estado", OPCOES_ESTADO, key=f"p_est_p_s_{id_chave}")
             fec_est = cp4.selectbox("Maçaneta", ["Funcionando", "Com folga", "Sem chave", "Oxidada"], key=f"fec_s_{id_chave}")
             
-            po_status = f"em {por_est.lower()}" if por_est == "Bom estado" else por_est.lower()
+            po_status = f"em {por_est.lower()}" if por_est == "Bom estado" else f"com pintura {por_est.lower().replace('novo', 'nova').replace('usado', 'usada')}"
             texto_acumulado += f"- PORTA: {por_mat} na cor {por_cor.lower()}, {po_status}. Maçaneta {fec_est.lower()}.\n"
 
         # --- JANELAS ---
