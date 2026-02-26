@@ -141,20 +141,24 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
 # --- INTERFACE PRINCIPAL ---
 st.title("📋 Vistoria de Entrada Profissional")
 
-# --- CONFIGURAÇÃO INICIAL ---
-with st.sidebar:
-    st.header("⚙️ Configuração do Imóvel")
-    q_quartos = st.number_input("Quantos Quartos (Simples)?", 0, 10, value=1)
-    q_suites = st.number_input("Quantas Suítes?", 0, 10, value=1)
+# --- CONFIGURAÇÃO DO IMÓVEL (NO CORPO DA PÁGINA) ---
+with st.container():
+    st.subheader("⚙️ Configuração Inicial")
+    col_c1, col_c2 = st.columns(2)
+    q_quartos = col_c1.number_input("Quantos Quartos (Simples)?", 0, 10, value=1)
+    q_suites = col_c2.number_input("Quantas Suítes?", 0, 10, value=1)
     
-    outros_comodos = st.multiselect("Outros Cômodos:", 
+    outros_comodos = st.multiselect("Selecione outros cômodos presentes:", 
                            ["Sala", "Cozinha", "Banheiro Social", "Área de Serviço", "Varanda", "Garagem"],
                            default=["Sala", "Cozinha", "Banheiro Social"])
+    
+    st.markdown("---")
 
 relatorio_completo = ""
 
 # --- PROCESSAMENTO DOS CÔMODOS ---
-# Sala
+
+# SALA
 if "Sala" in outros_comodos:
     tem_sacada_sala = st.checkbox("A Sala possui sacada?", key="chk_sac_sala")
     relatorio_completo += formulario_base("sala_0", "Sala")
@@ -162,7 +166,7 @@ if "Sala" in outros_comodos:
         relatorio_completo += formulario_base("sacada_sala", "Sala", eh_sacada=True)
     st.markdown("---")
 
-# Quartos
+# QUARTOS SIMPLES
 for i in range(int(q_quartos)):
     nome_q = f"Quarto {i+1}"
     tem_sacada_q = st.checkbox(f"O {nome_q} possui sacada?", key=f"chk_sac_q_{i}")
@@ -171,7 +175,7 @@ for i in range(int(q_quartos)):
         relatorio_completo += formulario_base(f"sacada_q_{i+1}", nome_q, eh_sacada=True)
     st.markdown("---")
 
-# Suítes
+# SUÍTES
 for i in range(int(q_suites)):
     nome_s = f"Suíte {i+1}"
     tem_sacada_s = st.checkbox(f"A {nome_s} possui sacada?", key=f"chk_sac_s_{i}")
@@ -180,7 +184,7 @@ for i in range(int(q_suites)):
         relatorio_completo += formulario_base(f"sacada_s_{i+1}", nome_s, eh_sacada=True)
     st.markdown("---")
 
-# Demais áreas
+# DEMAIS ÁREAS
 for item in ["Cozinha", "Banheiro Social", "Área de Serviço", "Varanda", "Garagem"]:
     if item in outros_comodos and item != "Sala":
         relatorio_completo += formulario_base(item.lower().replace(" ", "_"), item)
