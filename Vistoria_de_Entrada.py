@@ -80,7 +80,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             st.markdown("---")
             st.markdown("#### 3. Porta e Batente")
             cp1, cp2, cp3, cp4 = st.columns(4)
-            por_mat = cp1.selectbox("Material", ["Madeira", "Alumínio Branco", "Alumínio Preto", "Ferro", "PVC"], key=f"p_mat_p_s_{id_chave}")
+            por_mat = cp1.selectbox("Material", ["Madeira", "Alumínio Preto", "Ferro"], key=f"p_mat_p_s_{id_chave}")
             por_cor = cp2.selectbox("Cor", OPCOES_CORES, key=f"p_cor_p_s_{id_chave}")
             por_est = cp3.selectbox("Estado", OPCOES_ESTADO, key=f"p_est_p_s_{id_chave}")
             fec_est = cp4.selectbox("Maçaneta", ["Funcionando", "Com folga", "Sem chave", "Oxidada"], key=f"fec_s_{id_chave}")
