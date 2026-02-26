@@ -67,7 +67,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             tet_est = c7.selectbox("Estado Teto", OPCOES_ESTADO, key=f"tet_est_s_{id_chave}")
             
             def formatar_pintura(cor, estado):
-                est_txt = estado.lower()
+                est_txt = estado.lower().replace("novo", "nova").replace("usado", "usada")
                 if est_txt == "bom estado":
                     return f"Cor {cor.lower()}, em bom estado"
                 return f"Cor {cor.lower()}, com pintura {est_txt}"
