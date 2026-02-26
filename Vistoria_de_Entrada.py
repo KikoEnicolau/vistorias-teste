@@ -16,6 +16,7 @@ st.markdown("""
 def formulario_base(id_chave, nome_exibicao):
     with st.expander(f"📍 {nome_exibicao.upper()}", expanded=True):
         opcoes = ["Bom estado", "Novo", "Usado"]
+        opcoes_ilum = ["Bom estado", "Novo", "Usado", "Sem teste"]
         materiais_esquadrias = ["Alumínio Branco", "Alumínio Preto", "Alumínio Natural", "Madeira", "Ferro", "PVC"]
         
         # --- PISO ---
@@ -53,6 +54,10 @@ def formulario_base(id_chave, nome_exibicao):
         jan_mat = cj1.selectbox("Material Janela", materiais_esquadrias, key=f"j_mat_s_{id_chave}")
         jan_est = cj2.selectbox("Estado Janela", opcoes, key=f"jan_est_s_{id_chave}")
         vid_est = cj3.selectbox("Estado Vidros", ["Íntegros", "Riscados", "Trincados"], key=f"vid_est_s_{id_chave}")
+        
+        cj4, cj5 = st.columns(2)
+        q_vidros = cj4.number_input("Qtd de Vidros", 0, 20, value=1, key=f"q_vid_{id_chave}")
+        q_trincos = cj5.number_input("Qtd de Trincos", 0, 10, value=1, key=f"q_tri_{id_chave}")
 
         # --- ELÉTRICA ---
         st.markdown("---")
@@ -71,7 +76,20 @@ def formulario_base(id_chave, nome_exibicao):
         q_total = ci1.number_input("Qtd Itens Total", 0, 100, key=f"q_tot_n_{id_chave}")
         q_func = ci2.number_input("Funcionando ✅", 0, 100, key=f"q_fun_n_{id_chave}")
         q_queim = ci3.number_input("Queimadas ❌", 0, 100, key=f"q_queim_n_{id_chave}")
-        ilu_est = st.selectbox("Estado Geral Iluminação", opcoes, key=f"ilu_e_s_{id_chave}")
+        ilu_est = st.selectbox("Estado Geral Iluminação", opcoes_ilum, key=f"ilu_e_s_{id_chave}")
+
+        # --- SACADA (Só para Sala, Quartos e Suítes) ---
+        res_sacada = ""
+        tem_sacada = False
+        if any(x in nome_exibicao.lower() for x in ["sala", "quarto", "suíte"]):
+            st.markdown("---")
+            tem_sacada = st.checkbox("Possui Sacada?", key=f"check_sac_{id_chave}")
+            if tem_sacada:
+                c_s1, c_s2 = st.columns(2)
+                sac_est = c_s1.selectbox("Estado da Sacada", opcoes, key=f"sac_est_{id_chave}")
+                sac_piso = c_s2.text_input("Piso da Sacada", value="Mesmo do cômodo", key=f"sac_piso_{id_chave}")
+                sac_obs = st.text_input("Obs. Sacada (Ralo, tela de proteção, vidros)", key=f"sac_obs_{id_chave}")
+                res_sacada = f"- SACADA: Em {sac_est.lower()} com piso {sac_piso}. {sac_obs}\n"
 
         # --- HIDRÁULICA ---
         res_hidro = ""
@@ -86,13 +104,23 @@ def formulario_base(id_chave, nome_exibicao):
             res_hidro = f"- HIDRÁULICA: Metais em {met_est.lower()} e louças em {lou_est.lower()}. {hid_obs}\n"
 
     # --- MONTAGEM DO TEXTO ---
+    # Lógica de Iluminação formatada
+    tipos_ilum_str = ", ".join(ilu_tipo).lower()
+    txt_ilum = f"- ILUMINAÇÃO: {q_total:02d} {tipos_ilum_str} em {ilu_est.lower()}."
+    if ilu_est.lower() != "sem teste":
+        if q_queim == 0:
+            txt_ilum += " Todas funcionando."
+        else:
+            txt_ilum += f" Funcionando: {q_func} / Queimada(s): {q_queim}."
+
     res = f"### {nome_exibicao.upper()}\n"
     res += f"- PISO: {p_mat} na cor {p_cor} em {p_est.lower()}. {p_obs}\n"
     res += f"- PAREDES: Cor {par_cor}, {par_est.lower()}. TETO: Cor {tet_cor}, {tet_est.lower()}.\n"
     res += f"- PORTA: {por_mat} na cor {por_cor}, em {por_est.lower()}. Maçaneta {fec_est.lower()}.\n"
-    res += f"- JANELA: {jan_mat} em {jan_est.lower()} com vidros {vid_est.lower()}.\n"
+    res += f"- JANELA: {jan_mat} em {jan_est.lower()} ({q_vidros:02d} vidros e {q_trincos:02d} trincos). Vidros {vid_est.lower()}.\n"
     res += f"- ELÉTRICA: {q_tom} tomadas e {q_int} interruptores em {ele_est.lower()}.\n"
-    res += f"- ILUMINAÇÃO: {', '.join(ilu_tipo)} ({q_total} un). Funcionando: {q_func} / Queimadas: {q_queim}. Geral: {ilu_est.lower()}.\n"
+    res += txt_ilum + "\n"
+    if res_sacada: res += res_sacada
     if res_hidro: res += res_hidro
     
     return res + "\n"
@@ -114,7 +142,6 @@ with st.container():
 lista_comodos = []
 if "Sala" in outros: lista_comodos.append(("sala_0", "Sala"))
 
-# Correção do loop de Quartos e Suítes
 for i in range(int(qtd_quartos)):
     lista_comodos.append((f"quarto_{i+1}", f"Quarto {i+1}"))
 
