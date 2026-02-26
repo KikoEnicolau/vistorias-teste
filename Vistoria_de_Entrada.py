@@ -49,15 +49,16 @@ def formulario_base(id_chave, nome_exibicao):
 
         # --- JANELAS ---
         st.markdown("---")
-        st.markdown("**4. Janelas**")
+        st.markdown("**4. Janelas e Vidros**")
         cj1, cj2, cj3 = st.columns(3)
         jan_mat = cj1.selectbox("Material Janela", materiais_esquadrias, key=f"j_mat_s_{id_chave}")
         jan_est = cj2.selectbox("Estado Janela", opcoes, key=f"jan_est_s_{id_chave}")
-        vid_est = cj3.selectbox("Estado Vidros", ["Íntegros", "Riscados", "Trincados"], key=f"vid_est_s_{id_chave}")
+        vid_est_geral = cj3.selectbox("Estado dos Vidros", opcoes, key=f"vid_est_s_{id_chave}")
         
-        cj4, cj5 = st.columns(2)
+        cj4, cj5, cj6 = st.columns(3)
         q_vidros = cj4.number_input("Qtd de Vidros", 0, 20, value=1, key=f"q_vid_{id_chave}")
         q_trincos = cj5.number_input("Qtd de Trincos", 0, 10, value=1, key=f"q_tri_{id_chave}")
+        vid_avaria = cj6.selectbox("Avarias no Vidro?", ["Íntegro", "Trincado", "Quebrado", "Faltando"], key=f"vid_ava_{id_chave}")
 
         # --- ELÉTRICA ---
         st.markdown("---")
@@ -72,24 +73,55 @@ def formulario_base(id_chave, nome_exibicao):
         st.markdown("**6. Iluminação**")
         ilu_tipo = st.multiselect("Tipo de Iluminação", ["Lâmpada simples", "Spot LED", "Spot Plástico", "Luminária", "Dicroica", "Plafon"], default=["Lâmpada simples"], key=f"ilu_t_m_{id_chave}")
         
+        # Lógica especial para Lâmpadas em Spots de Plástico
+        possui_lampada = True
+        if "Spot Plástico" in ilu_tipo:
+            possui_lampada = st.checkbox("Os spots de plástico possuem lâmpadas instaladas?", value=True, key=f"check_lamp_{id_chave}")
+
         ci1, ci2, ci3 = st.columns(3)
         q_total = ci1.number_input("Qtd Itens Total", 0, 100, key=f"q_tot_n_{id_chave}")
-        q_func = ci2.number_input("Funcionando ✅", 0, 100, key=f"q_fun_n_{id_chave}")
-        q_queim = ci3.number_input("Queimadas ❌", 0, 100, key=f"q_queim_n_{id_chave}")
+        
+        q_func = 0
+        q_queim = 0
+        if possui_lampada:
+            q_func = ci2.number_input("Lâmpadas Funcionando ✅", 0, 100, key=f"q_fun_n_{id_chave}")
+            q_queim = ci3.number_input("Lâmpadas Queimadas ❌", 0, 100, key=f"q_queim_n_{id_chave}")
+        
         ilu_est = st.selectbox("Estado Geral Iluminação", opcoes_ilum, key=f"ilu_e_s_{id_chave}")
 
-        # --- SACADA (Só para Sala, Quartos e Suítes) ---
+        # --- SACADA (Expandida) ---
         res_sacada = ""
-        tem_sacada = False
         if any(x in nome_exibicao.lower() for x in ["sala", "quarto", "suíte"]):
             st.markdown("---")
             tem_sacada = st.checkbox("Possui Sacada?", key=f"check_sac_{id_chave}")
             if tem_sacada:
-                c_s1, c_s2 = st.columns(2)
-                sac_est = c_s1.selectbox("Estado da Sacada", opcoes, key=f"sac_est_{id_chave}")
-                sac_piso = c_s2.text_input("Piso da Sacada", value="Mesmo do cômodo", key=f"sac_piso_{id_chave}")
-                sac_obs = st.text_input("Obs. Sacada (Ralo, tela de proteção, vidros)", key=f"sac_obs_{id_chave}")
-                res_sacada = f"- SACADA: Em {sac_est.lower()} com piso {sac_piso}. {sac_obs}\n"
+                st.markdown("#### Detalhes da Sacada")
+                cs1, cs2 = st.columns(2)
+                s_par_est = cs1.selectbox("Estado Pintura Paredes (Sacada)", opcoes, key=f"s_par_{id_chave}")
+                s_tet_est = cs2.selectbox("Estado Pintura Teto (Sacada)", opcoes, key=f"s_tet_{id_chave}")
+                
+                cs3, cs4 = st.columns(2)
+                s_piso_mat = cs3.text_input("Piso da Sacada", value="Cerâmico", key=f"s_piso_{id_chave}")
+                s_piso_est = cs4.selectbox("Estado Piso (Sacada)", opcoes, key=f"s_piso_e_{id_chave}")
+                
+                cs5, cs6 = st.columns(2)
+                s_tom_int = cs5.selectbox("Tomadas/Interruptores (Sacada)", opcoes, key=f"s_ele_{id_chave}")
+                s_ilum = cs6.selectbox("Iluminação (Sacada)", opcoes_ilum, key=f"s_ilu_{id_chave}")
+
+                cs7, cs8 = st.columns(2)
+                s_tem_ralo = cs7.checkbox("Possui Ralo?", key=f"s_ralo_check_{id_chave}")
+                s_ralo_mat = ""
+                if s_tem_ralo:
+                    s_ralo_mat = cs8.text_input("Material do Ralo (ex: PVC, Inox)", key=f"s_ralo_m_{id_chave}")
+                
+                s_obs = st.text_input("Obs. Sacada", key=f"s_obs_{id_chave}")
+                
+                # Texto Sacada
+                ralo_txt = f"Com ralo de {s_ralo_mat}." if s_tem_ralo else "Sem ralo."
+                res_sacada = (f"- SACADA: Paredes {s_par_est.lower()}, teto {s_tet_est.lower()}. "
+                              f"Piso {s_piso_mat} em {s_piso_est.lower()}. "
+                              f"Elétrica {s_tom_int.lower()} e iluminação {s_ilum.lower()}. "
+                              f"{ralo_txt} {s_obs}\n")
 
         # --- HIDRÁULICA ---
         res_hidro = ""
@@ -104,20 +136,22 @@ def formulario_base(id_chave, nome_exibicao):
             res_hidro = f"- HIDRÁULICA: Metais em {met_est.lower()} e louças em {lou_est.lower()}. {hid_obs}\n"
 
     # --- MONTAGEM DO TEXTO ---
-    # Lógica de Iluminação formatada
     tipos_ilum_str = ", ".join(ilu_tipo).lower()
-    txt_ilum = f"- ILUMINAÇÃO: {q_total:02d} {tipos_ilum_str} em {ilu_est.lower()}."
-    if ilu_est.lower() != "sem teste":
+    txt_ilum = f"- ILUMINAÇÃO: {q_total:02} {tipos_ilum_str} em {ilu_est.lower()}."
+    
+    if "spot plástico" in tipos_ilum_str and not possui_lampada:
+        txt_ilum += " (Sem lâmpadas instaladas)."
+    elif ilu_est.lower() != "sem teste":
         if q_queim == 0:
-            txt_ilum += " Todas funcionando."
+            txt_ilum += " Todas as lâmpadas funcionando."
         else:
-            txt_ilum += f" Funcionando: {q_func} / Queimada(s): {q_queim}."
+            txt_ilum += f" Lâmpadas funcionando: {q_func} / Queimada(s): {q_queim}."
 
     res = f"### {nome_exibicao.upper()}\n"
     res += f"- PISO: {p_mat} na cor {p_cor} em {p_est.lower()}. {p_obs}\n"
     res += f"- PAREDES: Cor {par_cor}, {par_est.lower()}. TETO: Cor {tet_cor}, {tet_est.lower()}.\n"
     res += f"- PORTA: {por_mat} na cor {por_cor}, em {por_est.lower()}. Maçaneta {fec_est.lower()}.\n"
-    res += f"- JANELA: {jan_mat} em {jan_est.lower()} ({q_vidros:02d} vidros e {q_trincos:02d} trincos). Vidros {vid_est.lower()}.\n"
+    res += f"- JANELA: {jan_mat} em {jan_est.lower()} ({q_vidros:02} vidros e {q_trincos:02} trincos). Vidros {vid_est_geral.lower()} - Estado: {vid_avaria}.\n"
     res += f"- ELÉTRICA: {q_tom} tomadas e {q_int} interruptores em {ele_est.lower()}.\n"
     res += txt_ilum + "\n"
     if res_sacada: res += res_sacada
@@ -138,16 +172,10 @@ with st.container():
                            ["Sala", "Cozinha", "Banheiro Social", "Área de Serviço", "Varanda", "Garagem"],
                            default=["Sala", "Cozinha", "Banheiro Social"])
 
-# Lista final de cômodos
 lista_comodos = []
 if "Sala" in outros: lista_comodos.append(("sala_0", "Sala"))
-
-for i in range(int(qtd_quartos)):
-    lista_comodos.append((f"quarto_{i+1}", f"Quarto {i+1}"))
-
-for i in range(int(qtd_suites)):
-    lista_comodos.append((f"suite_{i+1}", f"Suíte {i+1}"))
-
+for i in range(int(qtd_quartos)): lista_comodos.append((f"quarto_{i+1}", f"Quarto {i+1}"))
+for i in range(int(qtd_suites)): lista_comodos.append((f"suite_{i+1}", f"Suíte {i+1}"))
 if "Cozinha" in outros: lista_comodos.append(("cozinha_0", "Cozinha"))
 if "Banheiro Social" in outros: lista_comodos.append(("banheiro_social_0", "Banheiro Social"))
 if "Área de Serviço" in outros: lista_comodos.append(("area_servico_0", "Área de Serviço"))
@@ -155,12 +183,9 @@ if "Varanda" in outros: lista_comodos.append(("varanda_0", "Varanda"))
 if "Garagem" in outros: lista_comodos.append(("garagem_0", "Garagem"))
 
 relatorio_completo = ""
-
-# Gerar formulários
 for id_c, nome_c in lista_comodos:
     relatorio_completo += formulario_base(id_c, nome_c)
 
-# --- ÁREA DE DOWNLOAD ---
 st.markdown("---")
 st.header("📄 Relatório Finalizado")
 if relatorio_completo:
