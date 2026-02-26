@@ -25,7 +25,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
         texto_acumulado = ""
 
         # --- PISO ---
-        incluir_piso = st.checkbox("Incluir Piso?", value=True, key=f"inc_piso_{id_chave}")
+        incluir_piso = st.checkbox("Incluir Piso?", value=False, key=f"inc_piso_{id_chave}")
         if incluir_piso:
             st.markdown("#### 1. Piso")
             c1, c2, c3 = st.columns(3)
@@ -36,7 +36,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             texto_acumulado += f"- PISO: {p_mat} na cor {p_cor} em {p_est.lower()}. {p_obs}\n"
 
         # --- PAREDES E TETO ---
-        incluir_par = st.checkbox("Incluir Paredes/Teto?", value=True, key=f"inc_par_{id_chave}")
+        incluir_par = st.checkbox("Incluir Paredes/Teto?", value=False, key=f"inc_par_{id_chave}")
         if incluir_par:
             st.markdown("---")
             st.markdown("#### 2. Paredes e Teto")
@@ -50,7 +50,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             texto_acumulado += f"- PAREDES: Cor {par_cor}, {par_est.lower()}. TETO: Cor {tet_cor}, {tet_est.lower()}.\n"
 
         # --- PORTAS ---
-        incluir_porta = st.checkbox("Incluir Porta/Batente?", value=not eh_sacada, key=f"inc_porta_{id_chave}")
+        incluir_porta = st.checkbox("Incluir Porta/Batente?", value=False, key=f"inc_porta_{id_chave}")
         if incluir_porta:
             st.markdown("---")
             st.markdown("#### 3. Porta e Batente")
@@ -62,7 +62,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             texto_acumulado += f"- PORTA: {por_mat} na cor {por_cor}, em {por_est.lower()}. Maçaneta {fec_est.lower()}.\n"
 
         # --- JANELAS ---
-        incluir_janela = st.checkbox("Incluir Janelas?", value=not eh_sacada, key=f"inc_janela_{id_chave}")
+        incluir_janela = st.checkbox("Incluir Janelas?", value=False, key=f"inc_janela_{id_chave}")
         if incluir_janela:
             st.markdown("---")
             st.markdown("#### 4. Janelas e Vidros")
@@ -82,7 +82,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             texto_acumulado += f"- JANELA: {jan_mat} em {jan_est.lower()} ({q_vidros:02} vidros e {q_trincos:02} trincos). Vidros {vid_est_geral.lower()} - Estado: {vid_avaria}.\n"
 
         # --- ELÉTRICA ---
-        incluir_eletrica = st.checkbox("Incluir Elétrica?", value=True, key=f"inc_ele_{id_chave}")
+        incluir_eletrica = st.checkbox("Incluir Elétrica?", value=False, key=f"inc_ele_{id_chave}")
         if incluir_eletrica:
             st.markdown("---")
             st.markdown("#### 5. Elétrica")
@@ -94,19 +94,20 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             txt_quadro = ""
             tem_quadro = st.checkbox("Possui Quadro de Disjuntores?", key=f"chk_quadro_{id_chave}")
             if tem_quadro:
-                mat_quadro = st.selectbox("Material do Quadro", ["Plástico", "Ferro", "Madeira", "Outro"], key=f"mat_quadro_{id_chave}")
+                c_q1, c_q2 = st.columns(2)
+                mat_quadro = c_q1.selectbox("Material do Quadro", ["Plástico", "Ferro", "Madeira", "Outro"], key=f"mat_quadro_{id_chave}")
+                est_q_geral = c_q2.selectbox("Estado do Quadro", ["Em bom estado", "Novo", "Usado"], key=f"est_quadro_geral_{id_chave}")
+                
                 if mat_quadro == "Madeira":
-                    c_q1, c_q2 = st.columns(2)
-                    cor_q = c_q1.text_input("Cor do Quadro", value="Verniz", key=f"cor_quadro_{id_chave}")
-                    est_q = c_q2.selectbox("Estado da Pintura", ["Em bom estado", "Nova", "Usada"], key=f"est_quadro_{id_chave}")
-                    txt_quadro = f" Quadro de disjuntores em {mat_quadro} na cor {cor_q} ({est_q.lower()})."
+                    cor_q = st.text_input("Cor da Madeira", value="Verniz", key=f"cor_quadro_{id_chave}")
+                    txt_quadro = f" Quadro de disjuntores em {mat_quadro} na cor {cor_q} ({est_q_geral.lower()})."
                 else:
-                    txt_quadro = f" Quadro de disjuntores em {mat_quadro}."
+                    txt_quadro = f" Quadro de disjuntores em {mat_quadro} ({est_q_geral.lower()})."
 
             texto_acumulado += f"- ELÉTRICA: {q_tom} tomadas e {q_int} interruptores em {ele_est.lower()}.{txt_quadro}\n"
 
         # --- ILUMINAÇÃO ---
-        incluir_ilum = st.checkbox("Incluir Iluminação?", value=True, key=f"inc_ilum_{id_chave}")
+        incluir_ilum = st.checkbox("Incluir Iluminação?", value=False, key=f"inc_ilum_{id_chave}")
         if incluir_ilum:
             st.markdown("---")
             st.markdown("#### 6. Iluminação")
@@ -128,7 +129,15 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             ilu_est = st.selectbox("Estado Geral Iluminação", opcoes_ilum, key=f"ilu_e_s_{id_chave}")
             
             tipos_ilum_str = ", ".join(ilu_tipo).lower()
-            txt_ilum = f"- ILUMINAÇÃO: {q_total:02} {tipos_ilum_str} em {ilu_est.lower()}."
+            
+            # Lógica para remover o "em" do novo/usado
+            if "bom estado" in ilu_est.lower():
+                est_formatado = f"em {ilu_est.lower()}"
+            else:
+                est_formatado = ilu_est.lower()
+
+            txt_ilum = f"- ILUMINAÇÃO: {q_total:02} {tipos_ilum_str} {est_formatado}."
+            
             if "spot plástico" in tipos_ilum_str and not possui_lampada:
                 txt_ilum += " (Sem lâmpadas instaladas)."
             elif ilu_est.lower() != "sem teste":
@@ -141,7 +150,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
         # --- HIDRÁULICA / RALO ---
         molhados = ["cozinha", "banheiro", "serviço", "suíte", "lavabo", "lavanderia"]
         if eh_sacada or any(x in nome_exibicao.lower() for x in molhados):
-            incluir_hidro = st.checkbox("Incluir Hidráulica/Ralo?", value=True, key=f"inc_hidro_{id_chave}")
+            incluir_hidro = st.checkbox("Incluir Hidráulica/Ralo?", value=False, key=f"inc_hidro_{id_chave}")
             if incluir_hidro:
                 st.markdown("---")
                 st.markdown("#### 7. Hidráulica / Ralo")
@@ -178,8 +187,7 @@ relatorio_total = ""
 
 # --- SALA ---
 if "Sala" in outros_comodos:
-    res_sala = formulario_base("sala_0", "Sala")
-    relatorio_total += res_sala
+    relatorio_total += formulario_base("sala_0", "Sala")
     tem_sacada_sala = st.checkbox("A Sala possui sacada?", key="chk_sac_sala")
     if tem_sacada_sala:
         relatorio_total += formulario_base("sacada_sala", "Sala", eh_sacada=True)
