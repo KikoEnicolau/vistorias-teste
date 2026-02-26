@@ -5,15 +5,22 @@ st.set_page_config(page_title="Vistoria Técnica Pro", page_icon="🏠", layout=
 
 # --- LISTAS DE OPÇÕES ATUALIZADAS ---
 OPCOES_ESTADO = ["Bom estado", "Novo", "Usado"]
-# Ajustado para "Branca" conforme solicitado
 OPCOES_CORES = ["Branca", "Gelo", "Cinza", "Bege", "Preta", "Marrom", "Amadeirada", "Off-white", "Natural"]
 
-# Listas de materiais agora são idênticas para Piso e Rodapé
 MATERIAIS_BASE = ["Frio", "Cerâmico", "Porcelanato", "Laminado", "Vinílico", "Ardósia", "Taco/Madeira"]
 OPCOES_PISO_MAT = MATERIAIS_BASE
 OPCOES_RODAPE_MAT = ["Mesmo material do piso"] + MATERIAIS_BASE + ["Madeira/MDF", "Poliuretano", "PVC", "Poliestireno"]
 
 OPCOES_RALO_MAT = ["Plástico", "Inox", "Ferro"]
+
+# Função auxiliar para formatar o estado (novo, usado, em bom estado)
+def formatar_estado(estado_selecionado):
+    est = estado_selecionado.lower()
+    if est == "bom estado":
+        return "em bom estado"
+    if est == "novo":
+        return "pintura nova" if "pintura" in st.session_state else "novo"
+    return est
 
 # --- ESTILIZAÇÃO ---
 st.markdown("""
@@ -48,8 +55,12 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             
             p_obs = st.text_input("Obs. Piso/Rodapé", key=f"p_obs_i_{id_chave}")
             
-            txt_piso = f"- PISO: {p_mat} na cor {p_cor.lower()} em {p_est.lower()}."
-            txt_rodape = f" RODAPÉ: {roda_mat} na cor {roda_cor.lower()} em {roda_est.lower()}."
+            # Lógica do "em" apenas para Bom Estado
+            p_status = f"em {p_est.lower()}" if p_est == "Bom estado" else p_est.lower()
+            r_status = f"em {roda_est.lower()}" if roda_est == "Bom estado" else roda_est.lower()
+
+            txt_piso = f"- PISO: {p_mat} na cor {p_cor.lower()}, {p_status}."
+            txt_rodape = f" RODAPÉ: {roda_mat} na cor {roda_cor.lower()}, {r_status}."
             texto_acumulado += f"{txt_piso}{txt_rodape} {p_obs}\n"
 
         # --- PAREDES E TETO ---
@@ -63,8 +74,16 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             tet_cor = c6.selectbox("Cor Teto", OPCOES_CORES, key=f"tet_cor_s_{id_chave}")
             tet_est = c7.selectbox("Estado Teto", OPCOES_ESTADO, key=f"tet_est_s_{id_chave}")
             
-            # Formatação solicitada: Cor branca, com pintura nova [estado].
-            texto_acumulado += f"- PAREDES: Cor {par_cor.lower()}, com pintura nova {par_est.lower()}. TETO: Cor {tet_cor.lower()}, com pintura nova {tet_est.lower()}.\n"
+            # Ajuste de texto para Paredes e Teto
+            def formatar_pintura(cor, estado):
+                est_txt = estado.lower()
+                if est_txt == "bom estado":
+                    return f"Cor {cor.lower()}, em bom estado"
+                if est_txt == "novo":
+                    return f"Cor {cor.lower()}, pintura nova"
+                return f"Cor {cor.lower()}, pintura usada"
+
+            texto_acumulado += f"- PAREDES: {formatar_pintura(par_cor, par_est)}. TETO: {formatar_pintura(tet_cor, tet_est)}.\n"
 
         # --- PORTAS ---
         incluir_porta = st.checkbox("Incluir Porta/Batente?", value=False, key=f"inc_porta_{id_chave}")
@@ -76,7 +95,9 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             por_cor = cp2.selectbox("Cor", OPCOES_CORES, key=f"p_cor_p_s_{id_chave}")
             por_est = cp3.selectbox("Estado", OPCOES_ESTADO, key=f"p_est_p_s_{id_chave}")
             fec_est = cp4.selectbox("Maçaneta", ["Funcionando", "Com folga", "Sem chave", "Oxidada"], key=f"fec_s_{id_chave}")
-            texto_acumulado += f"- PORTA: {por_mat} na cor {por_cor.lower()}, em {por_est.lower()}. Maçaneta {fec_est.lower()}.\n"
+            
+            po_status = f"em {por_est.lower()}" if por_est == "Bom estado" else por_est.lower()
+            texto_acumulado += f"- PORTA: {por_mat} na cor {por_cor.lower()}, {po_status}. Maçaneta {fec_est.lower()}.\n"
 
         # --- JANELAS ---
         incluir_janela = st.checkbox("Incluir Janelas?", value=False, key=f"inc_janela_{id_chave}")
@@ -93,12 +114,15 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             q_trincos = cj5.number_input("Qtd Trincos", 0, 10, value=1, key=f"q_tri_{id_chave}")
             tem_avaria = cj6.radio("Avarias no vidro?", ["Não", "Sim"], key=f"vid_radio_{id_chave}")
             
-            txt_vidros_estado = f"Vidros em {vid_est_geral.lower()}"
+            j_status = f"em {jan_est.lower()}" if jan_est == "Bom estado" else jan_est.lower()
+            v_status = f"em {vid_est_geral.lower()}" if vid_est_geral == "Bom estado" else vid_est_geral.lower()
+            
+            txt_vidros_estado = f"Vidros {v_status}"
             if tem_avaria == "Sim":
                 vid_ava = st.selectbox("Avaria:", ["Trincado", "Quebrado", "Faltando"], key=f"vid_ava_sel_{id_chave}")
                 txt_vidros_estado = f"Vidros {vid_ava.lower()}"
 
-            texto_acumulado += f"- JANELA: {jan_mat} em {jan_est.lower()} ({q_vidros:02} vidros e {q_trincos:02} trincos). {txt_vidros_estado}.\n"
+            texto_acumulado += f"- JANELA: {jan_mat} {j_status} ({q_vidros:02} vidros e {q_trincos:02} trincos). {txt_vidros_estado}.\n"
 
         # --- ELÉTRICA ---
         incluir_eletrica = st.checkbox("Incluir Elétrica?", value=False, key=f"inc_ele_{id_chave}")
@@ -110,22 +134,24 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             q_int = ce2.number_input("Qtd Interruptores", 0, 50, key=f"q_int_n_{id_chave}")
             ele_est = ce3.selectbox("Estado Placas", OPCOES_ESTADO, key=f"ele_est_s_{id_chave}")
             
+            e_status = f"em {ele_est.lower()}" if ele_est == "Bom estado" else ele_est.lower()
+            
             txt_quadro = ""
             tem_quadro = st.checkbox("Possui Quadro de Disjuntores?", key=f"chk_quadro_{id_chave}")
             if tem_quadro:
                 c_q1, c_q2 = st.columns(2)
                 mat_quadro = c_q1.selectbox("Material Quadro", ["plástico", "ferro", "madeira"], key=f"mat_quadro_{id_chave}")
                 est_quadro = c_q2.selectbox("Estado Quadro", OPCOES_ESTADO, key=f"est_quadro_s_{id_chave}")
-                txt_quadro = f" Quadro de disjuntores de {mat_quadro} em {est_quadro.lower()}."
+                q_status = f"em {est_quadro.lower()}" if est_quadro == "Bom estado" else est_quadro.lower()
+                txt_quadro = f" Quadro de disjuntores de {mat_quadro} {q_status}."
             
-            texto_acumulado += f"- ELÉTRICA: {q_tom} tomadas e {q_int} interruptores em {ele_est.lower()}.{txt_quadro}\n"
+            texto_acumulado += f"- ELÉTRICA: {q_tom} tomadas e {q_int} interruptores {e_status}.{txt_quadro}\n"
 
         # --- ILUMINAÇÃO ---
         incluir_ilum = st.checkbox("Incluir Iluminação?", value=False, key=f"inc_ilum_{id_chave}")
         if incluir_ilum:
             st.markdown("---")
             st.markdown("#### 6. Iluminação")
-            # Adicionado "de" na lista para facilitar a concatenação
             ilu_tipo = st.multiselect("Tipo", ["Lâmpada simples", "Spot de LED", "Spot de Plástico", "Luminária", "Plafon"], default=["Lâmpada simples"], key=f"ilu_t_m_{id_chave}")
             
             ci1, ci2, ci3, ci4 = st.columns(4)
@@ -143,9 +169,8 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
                     if "Luminária" in t: nome = t.replace("Luminária", "Luminárias")
                 tipos_ajustados.append(nome.lower())
 
-            est_format = f"em {ilu_est.lower()}" if "bom estado" in ilu_est.lower() else ilu_est.lower()
-            # O "de" agora já vem no nome do tipo selecionado
-            txt_ilum = f"- ILUMINAÇÃO: {q_total:02} {', '.join(tipos_ajustados)} {est_format}."
+            i_status = f"em {ilu_est.lower()}" if ilu_est == "Bom estado" else ilu_est.lower()
+            txt_ilum = f"- ILUMINAÇÃO: {q_total:02} {', '.join(tipos_ajustados)} {i_status}."
             if ilu_est.lower() != "sem teste":
                 txt_ilum += " Todas funcionando." if q_queim == 0 else f" Ok: {q_func} / Queimada: {q_queim}."
             texto_acumulado += txt_ilum + "\n"
@@ -159,7 +184,8 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
                 cr1, cr2 = st.columns(2)
                 r_mat = cr1.selectbox("Material Ralo", OPCOES_RALO_MAT, key=f"r_mat_s_ralo_{id_chave}")
                 r_est = cr2.selectbox("Estado Ralo", OPCOES_ESTADO, key=f"r_est_s_ralo_{id_chave}")
-                texto_acumulado += f"- RALO: {r_mat} em {r_est.lower()}.\n"
+                ra_status = f"em {r_est.lower()}" if r_est == "Bom estado" else r_est.lower()
+                texto_acumulado += f"- RALO: {r_mat} {ra_status}.\n"
 
     prefixo = f"### SACADA DO(A) {nome_exibicao.upper()}" if eh_sacada else f"### {nome_exibicao.upper()}"
     return f"{prefixo}\n{texto_acumulado}\n"
