@@ -7,20 +7,11 @@ st.set_page_config(page_title="Vistoria Técnica Pro", page_icon="🏠", layout=
 OPCOES_ESTADO = ["Bom estado", "Novo", "Usado"]
 OPCOES_CORES = ["Branca", "Gelo", "Cinza", "Bege", "Preta", "Marrom", "Amadeirada", "Off-white", "Natural"]
 
-MATERIAIS_BASE = ["Frio", "Cerâmico", "Porcelanato", "Laminado", "Vinílico", "Ardósia", "Taco/Madeira"]
-OPCOES_PISO_MAT = MATERIAIS_BASE
-OPCOES_RODAPE_MAT = ["Mesmo material do piso"] + MATERIAIS_BASE + ["Madeira/MDF", "Poliuretano", "PVC", "Poliestireno"]
+# Rodapé agora tem as mesmas opções do piso (sem o "mesmo material")
+OPCOES_PISO_MAT = ["Frio", "Cerâmico", "Porcelanato", "Laminado", "Vinílico", "Ardósia", "Taco/Madeira"]
+OPCOES_RODAPE_MAT = OPCOES_PISO_MAT + ["Madeira/MDF", "Poliuretano", "PVC", "Poliestireno"]
 
 OPCOES_RALO_MAT = ["Plástico", "Inox", "Ferro"]
-
-# Função auxiliar para formatar o estado (novo, usado, em bom estado)
-def formatar_estado(estado_selecionado):
-    est = estado_selecionado.lower()
-    if est == "bom estado":
-        return "em bom estado"
-    if est == "novo":
-        return "pintura nova" if "pintura" in st.session_state else "novo"
-    return est
 
 # --- ESTILIZAÇÃO ---
 st.markdown("""
@@ -55,12 +46,13 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             
             p_obs = st.text_input("Obs. Piso/Rodapé", key=f"p_obs_i_{id_chave}")
             
-            # Lógica do "em" apenas para Bom Estado
-            p_status = f"em {p_est.lower()}" if p_est == "Bom estado" else p_est.lower()
-            r_status = f"em {roda_est.lower()}" if roda_est == "Bom estado" else roda_est.lower()
+            # Formatação do estado para Piso/Rodapé
+            def fmt_est_piso(estado):
+                if estado == "Bom estado": return "em bom estado"
+                return estado.lower()
 
-            txt_piso = f"- PISO: {p_mat} na cor {p_cor.lower()}, {p_status}."
-            txt_rodape = f" RODAPÉ: {roda_mat} na cor {roda_cor.lower()}, {r_status}."
+            txt_piso = f"- PISO: {p_mat} na cor {p_cor.lower()}, {fmt_est_piso(p_est)}."
+            txt_rodape = f" RODAPÉ: {roda_mat} na cor {roda_cor.lower()}, {fmt_est_piso(roda_est)}."
             texto_acumulado += f"{txt_piso}{txt_rodape} {p_obs}\n"
 
         # --- PAREDES E TETO ---
@@ -74,14 +66,11 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             tet_cor = c6.selectbox("Cor Teto", OPCOES_CORES, key=f"tet_cor_s_{id_chave}")
             tet_est = c7.selectbox("Estado Teto", OPCOES_ESTADO, key=f"tet_est_s_{id_chave}")
             
-            # Ajuste de texto para Paredes e Teto
             def formatar_pintura(cor, estado):
                 est_txt = estado.lower()
                 if est_txt == "bom estado":
                     return f"Cor {cor.lower()}, em bom estado"
-                if est_txt == "novo":
-                    return f"Cor {cor.lower()}, pintura nova"
-                return f"Cor {cor.lower()}, pintura usada"
+                return f"Cor {cor.lower()}, com pintura {est_txt}"
 
             texto_acumulado += f"- PAREDES: {formatar_pintura(par_cor, par_est)}. TETO: {formatar_pintura(tet_cor, tet_est)}.\n"
 
@@ -135,17 +124,8 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             ele_est = ce3.selectbox("Estado Placas", OPCOES_ESTADO, key=f"ele_est_s_{id_chave}")
             
             e_status = f"em {ele_est.lower()}" if ele_est == "Bom estado" else ele_est.lower()
-            
-            txt_quadro = ""
-            tem_quadro = st.checkbox("Possui Quadro de Disjuntores?", key=f"chk_quadro_{id_chave}")
-            if tem_quadro:
-                c_q1, c_q2 = st.columns(2)
-                mat_quadro = c_q1.selectbox("Material Quadro", ["plástico", "ferro", "madeira"], key=f"mat_quadro_{id_chave}")
-                est_quadro = c_q2.selectbox("Estado Quadro", OPCOES_ESTADO, key=f"est_quadro_s_{id_chave}")
-                q_status = f"em {est_quadro.lower()}" if est_quadro == "Bom estado" else est_quadro.lower()
-                txt_quadro = f" Quadro de disjuntores de {mat_quadro} {q_status}."
-            
-            texto_acumulado += f"- ELÉTRICA: {q_tom} tomadas e {q_int} interruptores {e_status}.{txt_quadro}\n"
+            # Adicionado "de plástico" conforme solicitado
+            texto_acumulado += f"- ELÉTRICA: {q_tom} tomadas e {q_int} interruptores de plástico {e_status}.\n"
 
         # --- ILUMINAÇÃO ---
         incluir_ilum = st.checkbox("Incluir Iluminação?", value=False, key=f"inc_ilum_{id_chave}")
@@ -172,7 +152,8 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             i_status = f"em {ilu_est.lower()}" if ilu_est == "Bom estado" else ilu_est.lower()
             txt_ilum = f"- ILUMINAÇÃO: {q_total:02} {', '.join(tipos_ajustados)} {i_status}."
             if ilu_est.lower() != "sem teste":
-                txt_ilum += " Todas funcionando." if q_queim == 0 else f" Ok: {q_func} / Queimada: {q_queim}."
+                # Alterado de "Ok" para "Funcionando" conforme solicitado
+                txt_ilum += " Todas funcionando." if q_queim == 0 else f" Funcionando: {q_func} / Queimada: {q_queim}."
             texto_acumulado += txt_ilum + "\n"
 
         # --- RALO ---
