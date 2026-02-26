@@ -14,7 +14,6 @@ st.markdown("""
 
 # --- FUNÇÃO DO FORMULÁRIO ---
 def formulario_base(id_chave, nome_exibicao):
-    # O id_chave aqui garante que nenhum campo seja igual ao outro
     with st.expander(f"📍 {nome_exibicao.upper()}", expanded=True):
         opcoes = ["Bom estado", "Novo", "Usado"]
         materiais_esquadrias = ["Alumínio Branco", "Alumínio Preto", "Alumínio Natural", "Madeira", "Ferro", "PVC"]
@@ -22,10 +21,10 @@ def formulario_base(id_chave, nome_exibicao):
         # --- PISO ---
         st.markdown("**1. Piso**")
         c1, c2, c3 = st.columns(3)
-        p_mat = c1.text_input("Material", value="Cerâmico", key=f"p_mat_input_{id_chave}")
-        p_cor = c2.text_input("Cor do Piso", key=f"p_cor_input_{id_chave}")
-        p_est = c3.selectbox("Estado", opcoes, key=f"p_est_sel_{id_chave}")
-        p_obs = st.text_input("Obs. do Piso", key=f"p_obs_input_{id_chave}")
+        p_mat = c1.text_input("Material", value="Cerâmico", key=f"p_mat_i_{id_chave}")
+        p_cor = c2.text_input("Cor do Piso", key=f"p_cor_i_{id_chave}")
+        p_est = c3.selectbox("Estado", opcoes, key=f"p_est_s_{id_chave}")
+        p_obs = st.text_input("Obs. do Piso", key=f"p_obs_i_{id_chave}")
 
         # --- PAREDES E TETO ---
         st.markdown("---")
@@ -42,37 +41,37 @@ def formulario_base(id_chave, nome_exibicao):
         st.markdown("---")
         st.markdown("**3. Porta e Batente**")
         cp1, cp2, cp3 = st.columns(3)
-        por_mat = cp1.selectbox("Material Porta", ["Madeira", "Alumínio", "Ferro", "PVC"], key=f"p_mat_p_sel_{id_chave}")
-        por_cor = cp2.text_input("Cor Porta/Batente", key=f"p_cor_p_in_{id_chave}")
-        por_est = cp3.selectbox("Estado Porta/Batente", opcoes, key=f"p_est_p_sel_{id_chave}")
-        fec_est = st.selectbox("Fechadura/Maçaneta", ["Funcionando", "Com folga", "Sem chave", "Oxidada"], key=f"fec_sel_{id_chave}")
+        por_mat = cp1.selectbox("Material Porta", ["Madeira", "Alumínio", "Ferro", "PVC"], key=f"p_mat_p_s_{id_chave}")
+        por_cor = cp2.text_input("Cor Porta/Batente", key=f"p_cor_p_i_{id_chave}")
+        por_est = cp3.selectbox("Estado Porta/Batente", opcoes, key=f"p_est_p_s_{id_chave}")
+        fec_est = st.selectbox("Fechadura/Maçaneta", ["Funcionando", "Com folga", "Sem chave", "Oxidada"], key=f"fec_s_{id_chave}")
 
         # --- JANELAS ---
         st.markdown("---")
         st.markdown("**4. Janelas**")
         cj1, cj2, cj3 = st.columns(3)
-        jan_mat = cj1.selectbox("Material Janela", materiais_esquadrias, key=f"j_mat_sel_{id_chave}")
-        jan_est = cj2.selectbox("Estado Janela", opcoes, key=f"jan_est_sel_{id_chave}")
-        vid_est = cj3.selectbox("Estado Vidros", ["Íntegros", "Riscados", "Trincados"], key=f"vid_est_sel_{id_chave}")
+        jan_mat = cj1.selectbox("Material Janela", materiais_esquadrias, key=f"j_mat_s_{id_chave}")
+        jan_est = cj2.selectbox("Estado Janela", opcoes, key=f"jan_est_s_{id_chave}")
+        vid_est = cj3.selectbox("Estado Vidros", ["Íntegros", "Riscados", "Trincados"], key=f"vid_est_s_{id_chave}")
 
         # --- ELÉTRICA ---
         st.markdown("---")
         st.markdown("**5. Elétrica**")
         ce1, ce2, ce3 = st.columns(3)
-        q_tom = ce1.number_input("Qtd Tomadas", 0, 50, key=f"q_tom_num_{id_chave}")
-        q_int = ce2.number_input("Qtd Interruptores", 0, 50, key=f"q_int_num_{id_chave}")
-        ele_est = ce3.selectbox("Estado Espelhos/Placas", opcoes, key=f"ele_est_sel_{id_chave}")
+        q_tom = ce1.number_input("Qtd Tomadas", 0, 50, key=f"q_tom_n_{id_chave}")
+        q_int = ce2.number_input("Qtd Interruptores", 0, 50, key=f"q_int_n_{id_chave}")
+        ele_est = ce3.selectbox("Estado Espelhos/Placas", opcoes, key=f"ele_est_s_{id_chave}")
 
         # --- ILUMINAÇÃO ---
         st.markdown("---")
         st.markdown("**6. Iluminação**")
-        ilu_tipo = st.multiselect("Tipo de Iluminação", ["Lâmpada simples", "Spot LED", "Spot Plástico", "Luminária", "Dicroica", "Plafon"], default=["Lâmpada simples"], key=f"ilu_t_multi_{id_chave}")
+        ilu_tipo = st.multiselect("Tipo de Iluminação", ["Lâmpada simples", "Spot LED", "Spot Plástico", "Luminária", "Dicroica", "Plafon"], default=["Lâmpada simples"], key=f"ilu_t_m_{id_chave}")
         
         ci1, ci2, ci3 = st.columns(3)
-        q_total = ci1.number_input("Qtd Itens Total", 0, 100, key=f"q_tot_num_{id_chave}")
-        q_func = ci2.number_input("Funcionando ✅", 0, 100, key=f"q_fun_num_{id_chave}")
-        q_queim = ci3.number_input("Queimadas ❌", 0, 100, key=f"q_queim_num_{id_chave}")
-        ilu_est = st.selectbox("Estado Geral Iluminação", opcoes, key=f"ilu_e_sel_{id_chave}")
+        q_total = ci1.number_input("Qtd Itens Total", 0, 100, key=f"q_tot_n_{id_chave}")
+        q_func = ci2.number_input("Funcionando ✅", 0, 100, key=f"q_fun_n_{id_chave}")
+        q_queim = ci3.number_input("Queimadas ❌", 0, 100, key=f"q_queim_n_{id_chave}")
+        ilu_est = st.selectbox("Estado Geral Iluminação", opcoes, key=f"ilu_e_s_{id_chave}")
 
         # --- HIDRÁULICA ---
         res_hidro = ""
@@ -81,9 +80,9 @@ def formulario_base(id_chave, nome_exibicao):
             st.markdown("---")
             st.markdown("**7. Hidráulica**")
             ch1, ch2 = st.columns(2)
-            met_est = ch1.selectbox("Estado Metais (Torneiras)", opcoes, key=f"met_est_sel_{id_chave}")
-            lou_est = ch2.selectbox("Estado Louças (Pias/Vasos)", opcoes, key=f"lou_est_sel_{id_chave}")
-            hid_obs = st.text_input("Obs. Hidráulica", key=f"hid_obs_in_{id_chave}")
+            met_est = ch1.selectbox("Estado Metais (Torneiras)", opcoes, key=f"met_est_s_{id_chave}")
+            lou_est = ch2.selectbox("Estado Louças (Pias/Vasos)", opcoes, key=f"lou_est_s_{id_chave}")
+            hid_obs = st.text_input("Obs. Hidráulica", key=f"hid_obs_i_{id_chave}")
             res_hidro = f"- HIDRÁULICA: Metais em {met_est.lower()} e louças em {lou_est.lower()}. {hid_obs}\n"
 
     # --- MONTAGEM DO TEXTO ---
@@ -111,7 +110,32 @@ with st.container():
                            ["Sala", "Cozinha", "Banheiro Social", "Área de Serviço", "Varanda", "Garagem"],
                            default=["Sala", "Cozinha", "Banheiro Social"])
 
-# Lista final de cômodos (Gerando IDs únicos para cada um)
+# Lista final de cômodos
 lista_comodos = []
 if "Sala" in outros: lista_comodos.append(("sala_0", "Sala"))
-for i in range(qtd
+
+# Correção do loop de Quartos e Suítes
+for i in range(int(qtd_quartos)):
+    lista_comodos.append((f"quarto_{i+1}", f"Quarto {i+1}"))
+
+for i in range(int(qtd_suites)):
+    lista_comodos.append((f"suite_{i+1}", f"Suíte {i+1}"))
+
+if "Cozinha" in outros: lista_comodos.append(("cozinha_0", "Cozinha"))
+if "Banheiro Social" in outros: lista_comodos.append(("banheiro_social_0", "Banheiro Social"))
+if "Área de Serviço" in outros: lista_comodos.append(("area_servico_0", "Área de Serviço"))
+if "Varanda" in outros: lista_comodos.append(("varanda_0", "Varanda"))
+if "Garagem" in outros: lista_comodos.append(("garagem_0", "Garagem"))
+
+relatorio_completo = ""
+
+# Gerar formulários
+for id_c, nome_c in lista_comodos:
+    relatorio_completo += formulario_base(id_c, nome_c)
+
+# --- ÁREA DE DOWNLOAD ---
+st.markdown("---")
+st.header("📄 Relatório Finalizado")
+if relatorio_completo:
+    st.code(relatorio_completo, language="markdown")
+    st.download_button("📥 Baixar Arquivo de Vistoria", relatorio_completo, "vistoria.txt")
