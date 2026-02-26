@@ -90,7 +90,20 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             q_tom = ce1.number_input("Qtd Tomadas", 0, 50, key=f"q_tom_n_{id_chave}")
             q_int = ce2.number_input("Qtd Interruptores", 0, 50, key=f"q_int_n_{id_chave}")
             ele_est = ce3.selectbox("Estado Espelhos/Placas", opcoes, key=f"ele_est_s_{id_chave}")
-            texto_acumulado += f"- ELÉTRICA: {q_tom} tomadas e {q_int} interruptores em {ele_est.lower()}.\n"
+            
+            txt_quadro = ""
+            tem_quadro = st.checkbox("Possui Quadro de Disjuntores?", key=f"chk_quadro_{id_chave}")
+            if tem_quadro:
+                mat_quadro = st.selectbox("Material do Quadro", ["Plástico", "Ferro", "Madeira", "Outro"], key=f"mat_quadro_{id_chave}")
+                if mat_quadro == "Madeira":
+                    c_q1, c_q2 = st.columns(2)
+                    cor_q = c_q1.text_input("Cor do Quadro", value="Verniz", key=f"cor_quadro_{id_chave}")
+                    est_q = c_q2.selectbox("Estado da Pintura", ["Em bom estado", "Nova", "Usada"], key=f"est_quadro_{id_chave}")
+                    txt_quadro = f" Quadro de disjuntores em {mat_quadro} na cor {cor_q} ({est_q.lower()})."
+                else:
+                    txt_quadro = f" Quadro de disjuntores em {mat_quadro}."
+
+            texto_acumulado += f"- ELÉTRICA: {q_tom} tomadas e {q_int} interruptores em {ele_est.lower()}.{txt_quadro}\n"
 
         # --- ILUMINAÇÃO ---
         incluir_ilum = st.checkbox("Incluir Iluminação?", value=True, key=f"inc_ilum_{id_chave}")
@@ -139,12 +152,10 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
                     hid_obs = st.text_input("Obs. Hidráulica", key=f"hid_obs_i_{id_chave}")
                     texto_acumulado += f"- HIDRÁULICA: Metais em {met_est.lower()} e louças em {lou_est.lower()}. {hid_obs}\n"
                 else:
-                    s_tem_ralo = ch1.checkbox("Possui Ralo?", key=f"s_ralo_check_{id_chave}")
+                    s_tem_ralo = ch1.checkbox("Possui Ralo?", value=False, key=f"s_ralo_check_{id_chave}")
                     if s_tem_ralo:
                         s_ralo_mat = ch2.text_input("Material do Ralo (ex: PVC, Inox)", key=f"s_ralo_m_{id_chave}")
                         texto_acumulado += f"- RALO: Em {s_ralo_mat}.\n"
-                    else:
-                        texto_acumulado += "- RALO: Não possui.\n"
 
     cabecalho = f"### SACADA DO(A) {nome_exibicao.upper()}" if eh_sacada else f"### {nome_exibicao.upper()}"
     return f"{cabecalho}\n{texto_acumulado}\n"
@@ -163,42 +174,43 @@ with st.container():
                            default=["Sala", "Cozinha", "Banheiro Social"])
     st.markdown("---")
 
-relatorio_completo = ""
+relatorio_total = ""
 
-# SALA
+# --- SALA ---
 if "Sala" in outros_comodos:
+    res_sala = formulario_base("sala_0", "Sala")
+    relatorio_total += res_sala
     tem_sacada_sala = st.checkbox("A Sala possui sacada?", key="chk_sac_sala")
-    relatorio_completo += formulario_base("sala_0", "Sala")
     if tem_sacada_sala:
-        relatorio_completo += formulario_base("sacada_sala", "Sala", eh_sacada=True)
+        relatorio_total += formulario_base("sacada_sala", "Sala", eh_sacada=True)
     st.markdown("---")
 
-# QUARTOS
+# --- QUARTOS ---
 for i in range(int(q_quartos)):
     nome_q = f"Quarto {i+1}"
+    relatorio_total += formulario_base(f"quarto_{i+1}", nome_q)
     tem_sacada_q = st.checkbox(f"O {nome_q} possui sacada?", key=f"chk_sac_q_{i}")
-    relatorio_completo += formulario_base(f"quarto_{i+1}", nome_q)
     if tem_sacada_q:
-        relatorio_completo += formulario_base(f"sacada_q_{i+1}", nome_q, eh_sacada=True)
+        relatorio_total += formulario_base(f"sacada_q_{i+1}", nome_q, eh_sacada=True)
     st.markdown("---")
 
-# SUÍTES
+# --- SUÍTES ---
 for i in range(int(q_suites)):
     nome_s = f"Suíte {i+1}"
+    relatorio_total += formulario_base(f"suite_{i+1}", nome_s)
     tem_sacada_s = st.checkbox(f"A {nome_s} possui sacada?", key=f"chk_sac_s_{i}")
-    relatorio_completo += formulario_base(f"suite_{i+1}", nome_s)
     if tem_sacada_s:
-        relatorio_completo += formulario_base(f"sacada_s_{i+1}", nome_s, eh_sacada=True)
+        relatorio_total += formulario_base(f"sacada_s_{i+1}", nome_s, eh_sacada=True)
     st.markdown("---")
 
-# DEMAIS ÁREAS
+# --- DEMAIS ÁREAS ---
 for item in ["Cozinha", "Banheiro Social", "Área de Serviço", "Varanda", "Garagem"]:
     if item in outros_comodos and item != "Sala":
-        relatorio_completo += formulario_base(item.lower().replace(" ", "_"), item)
+        relatorio_total += formulario_base(item.lower().replace(" ", "_"), item)
         st.markdown("---")
 
 # --- ÁREA FINAL ---
 st.header("📄 Relatório Finalizado")
-if relatorio_completo:
-    st.code(relatorio_completo, language="markdown")
-    st.download_button("📥 Baixar Arquivo de Vistoria", relatorio_completo, "vistoria.txt")
+if relatorio_total:
+    st.code(relatorio_total, language="markdown")
+    st.download_button("📥 Baixar Arquivo de Vistoria", relatorio_total, "vistoria.txt")
