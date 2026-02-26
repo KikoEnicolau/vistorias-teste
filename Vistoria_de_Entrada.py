@@ -3,12 +3,16 @@ import streamlit as st
 # Configuração da página
 st.set_page_config(page_title="Vistoria Técnica Pro", page_icon="🏠", layout="centered")
 
-# --- LISTAS DE OPÇÕES ATUALIZADAS (Ajuste solicitado realizado aqui) ---
+# --- LISTAS DE OPÇÕES ATUALIZADAS ---
 OPCOES_ESTADO = ["Bom estado", "Novo", "Usado"]
-OPCOES_CORES = ["Branco", "Gelo", "Cinza", "Bege", "Preto", "Marrom", "Amadeirado", "Off-white", "Natural"]
-# Removido "Piso" de "Piso Frio" para evitar redundância no relatório
-OPCOES_PISO_MAT = ["Frio", "Cerâmico", "Porcelanato", "Laminado", "Vinílico", "Ardósia", "Taco/Madeira"]
-OPCOES_RODAPE_MAT = ["Mesmo material do piso", "Madeira/MDF", "Poliuretano", "PVC", "Cerâmico", "Poliestireno"]
+# Ajustado para "Branca" conforme solicitado
+OPCOES_CORES = ["Branca", "Gelo", "Cinza", "Bege", "Preta", "Marrom", "Amadeirada", "Off-white", "Natural"]
+
+# Listas de materiais agora são idênticas para Piso e Rodapé
+MATERIAIS_BASE = ["Frio", "Cerâmico", "Porcelanato", "Laminado", "Vinílico", "Ardósia", "Taco/Madeira"]
+OPCOES_PISO_MAT = MATERIAIS_BASE
+OPCOES_RODAPE_MAT = ["Mesmo material do piso"] + MATERIAIS_BASE + ["Madeira/MDF", "Poliuretano", "PVC", "Poliestireno"]
+
 OPCOES_RALO_MAT = ["Plástico", "Inox", "Ferro"]
 
 # --- ESTILIZAÇÃO ---
@@ -36,7 +40,6 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             p_cor = c2.selectbox("Cor Piso", OPCOES_CORES, key=f"p_cor_s_{id_chave}")
             p_est = c3.selectbox("Estado Piso", OPCOES_ESTADO, key=f"p_est_s_{id_chave}")
             
-            # Rodapé
             st.write("Rodapé:")
             r1, r2, r3 = st.columns(3)
             roda_mat = r1.selectbox("Material Rodapé", OPCOES_RODAPE_MAT, key=f"r_mat_s_{id_chave}")
@@ -45,9 +48,8 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             
             p_obs = st.text_input("Obs. Piso/Rodapé", key=f"p_obs_i_{id_chave}")
             
-            # Aqui a saída agora será "PISO: Frio" em vez de "PISO: Piso Frio"
-            txt_piso = f"- PISO: {p_mat} na cor {p_cor} em {p_est.lower()}."
-            txt_rodape = f" RODAPÉ: {roda_mat} na cor {roda_cor} em {roda_est.lower()}."
+            txt_piso = f"- PISO: {p_mat} na cor {p_cor.lower()} em {p_est.lower()}."
+            txt_rodape = f" RODAPÉ: {roda_mat} na cor {roda_cor.lower()} em {roda_est.lower()}."
             texto_acumulado += f"{txt_piso}{txt_rodape} {p_obs}\n"
 
         # --- PAREDES E TETO ---
@@ -60,7 +62,9 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             par_est = c5.selectbox("Estado Paredes", OPCOES_ESTADO, key=f"par_est_s_{id_chave}")
             tet_cor = c6.selectbox("Cor Teto", OPCOES_CORES, key=f"tet_cor_s_{id_chave}")
             tet_est = c7.selectbox("Estado Teto", OPCOES_ESTADO, key=f"tet_est_s_{id_chave}")
-            texto_acumulado += f"- PAREDES: Cor {par_cor}, {par_est.lower()}. TETO: Cor {tet_cor}, {tet_est.lower()}.\n"
+            
+            # Formatação solicitada: Cor branca, com pintura nova [estado].
+            texto_acumulado += f"- PAREDES: Cor {par_cor.lower()}, com pintura nova {par_est.lower()}. TETO: Cor {tet_cor.lower()}, com pintura nova {tet_est.lower()}.\n"
 
         # --- PORTAS ---
         incluir_porta = st.checkbox("Incluir Porta/Batente?", value=False, key=f"inc_porta_{id_chave}")
@@ -72,7 +76,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             por_cor = cp2.selectbox("Cor", OPCOES_CORES, key=f"p_cor_p_s_{id_chave}")
             por_est = cp3.selectbox("Estado", OPCOES_ESTADO, key=f"p_est_p_s_{id_chave}")
             fec_est = cp4.selectbox("Maçaneta", ["Funcionando", "Com folga", "Sem chave", "Oxidada"], key=f"fec_s_{id_chave}")
-            texto_acumulado += f"- PORTA: {por_mat} na cor {por_cor}, em {por_est.lower()}. Maçaneta {fec_est.lower()}.\n"
+            texto_acumulado += f"- PORTA: {por_mat} na cor {por_cor.lower()}, em {por_est.lower()}. Maçaneta {fec_est.lower()}.\n"
 
         # --- JANELAS ---
         incluir_janela = st.checkbox("Incluir Janelas?", value=False, key=f"inc_janela_{id_chave}")
@@ -121,7 +125,8 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
         if incluir_ilum:
             st.markdown("---")
             st.markdown("#### 6. Iluminação")
-            ilu_tipo = st.multiselect("Tipo", ["Lâmpada simples", "Spot LED", "Spot Plástico", "Luminária", "Plafon"], default=["Lâmpada simples"], key=f"ilu_t_m_{id_chave}")
+            # Adicionado "de" na lista para facilitar a concatenação
+            ilu_tipo = st.multiselect("Tipo", ["Lâmpada simples", "Spot de LED", "Spot de Plástico", "Luminária", "Plafon"], default=["Lâmpada simples"], key=f"ilu_t_m_{id_chave}")
             
             ci1, ci2, ci3, ci4 = st.columns(4)
             q_total = ci1.number_input("Qtd Total", 0, 100, key=f"q_tot_n_{id_chave}")
@@ -129,7 +134,6 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             q_func = ci3.number_input("Funcionando", 0, 100, key=f"q_fun_n_{id_chave}")
             q_queim = ci4.number_input("Queimadas", 0, 100, key=f"q_queim_n_{id_chave}")
             
-            # Lógica Plural
             tipos_ajustados = []
             for t in ilu_tipo:
                 nome = t
@@ -140,6 +144,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
                 tipos_ajustados.append(nome.lower())
 
             est_format = f"em {ilu_est.lower()}" if "bom estado" in ilu_est.lower() else ilu_est.lower()
+            # O "de" agora já vem no nome do tipo selecionado
             txt_ilum = f"- ILUMINAÇÃO: {q_total:02} {', '.join(tipos_ajustados)} {est_format}."
             if ilu_est.lower() != "sem teste":
                 txt_ilum += " Todas funcionando." if q_queim == 0 else f" Ok: {q_func} / Queimada: {q_queim}."
