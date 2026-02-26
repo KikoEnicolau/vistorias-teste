@@ -13,8 +13,10 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # --- FUNÇÃO DO FORMULÁRIO ---
-def formulario_base(id_chave, nome_exibicao):
-    with st.expander(f"📍 {nome_exibicao.upper()}", expanded=True):
+def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
+    titulo = f"📍 {nome_exibicao.upper()}" if not eh_sacada else f"🌅 SACADA ({nome_exibicao.upper()})"
+    
+    with st.expander(titulo, expanded=True):
         opcoes = ["Bom estado", "Novo", "Usado"]
         opcoes_ilum = ["Bom estado", "Novo", "Usado", "Sem teste"]
         materiais_esquadrias = ["Alumínio Branco", "Alumínio Preto", "Alumínio Natural", "Madeira", "Ferro", "PVC"]
@@ -38,7 +40,7 @@ def formulario_base(id_chave, nome_exibicao):
             tet_cor = st.text_input("Cor Teto", value="Branco", key=f"tet_cor_in_{id_chave}")
             tet_est = st.selectbox("Estado Teto", opcoes, key=f"tet_est_in_{id_chave}")
 
-        # --- PORTAS ---
+        # --- PORTAS (Omitir se for apenas sacada, a menos que queira manter) ---
         st.markdown("---")
         st.markdown("**3. Porta e Batente**")
         cp1, cp2, cp3 = st.columns(3)
@@ -58,7 +60,11 @@ def formulario_base(id_chave, nome_exibicao):
         cj4, cj5, cj6 = st.columns(3)
         q_vidros = cj4.number_input("Qtd de Vidros", 0, 20, value=1, key=f"q_vid_{id_chave}")
         q_trincos = cj5.number_input("Qtd de Trincos", 0, 10, value=1, key=f"q_tri_{id_chave}")
-        vid_avaria = cj6.selectbox("Avarias no Vidro?", ["Íntegro", "Trincado", "Quebrado", "Faltando"], key=f"vid_ava_{id_chave}")
+        tem_avaria = cj6.radio("Possui avarias no vidro?", ["Não", "Sim"], key=f"vid_radio_{id_chave}")
+        
+        vid_avaria = "Íntegro"
+        if tem_avaria == "Sim":
+            vid_avaria = st.selectbox("Qual a avaria?", ["Trincado", "Quebrado", "Faltando"], key=f"vid_ava_sel_{id_chave}")
 
         # --- ELÉTRICA ---
         st.markdown("---")
@@ -73,7 +79,6 @@ def formulario_base(id_chave, nome_exibicao):
         st.markdown("**6. Iluminação**")
         ilu_tipo = st.multiselect("Tipo de Iluminação", ["Lâmpada simples", "Spot LED", "Spot Plástico", "Luminária", "Dicroica", "Plafon"], default=["Lâmpada simples"], key=f"ilu_t_m_{id_chave}")
         
-        # Lógica especial para Lâmpadas em Spots de Plástico
         possui_lampada = True
         if "Spot Plástico" in ilu_tipo:
             possui_lampada = st.checkbox("Os spots de plástico possuem lâmpadas instaladas?", value=True, key=f"check_lamp_{id_chave}")
@@ -89,51 +94,25 @@ def formulario_base(id_chave, nome_exibicao):
         
         ilu_est = st.selectbox("Estado Geral Iluminação", opcoes_ilum, key=f"ilu_e_s_{id_chave}")
 
-        # --- SACADA (Expandida) ---
-        res_sacada = ""
-        if any(x in nome_exibicao.lower() for x in ["sala", "quarto", "suíte"]):
-            st.markdown("---")
-            tem_sacada = st.checkbox("Possui Sacada?", key=f"check_sac_{id_chave}")
-            if tem_sacada:
-                st.markdown("#### Detalhes da Sacada")
-                cs1, cs2 = st.columns(2)
-                s_par_est = cs1.selectbox("Estado Pintura Paredes (Sacada)", opcoes, key=f"s_par_{id_chave}")
-                s_tet_est = cs2.selectbox("Estado Pintura Teto (Sacada)", opcoes, key=f"s_tet_{id_chave}")
-                
-                cs3, cs4 = st.columns(2)
-                s_piso_mat = cs3.text_input("Piso da Sacada", value="Cerâmico", key=f"s_piso_{id_chave}")
-                s_piso_est = cs4.selectbox("Estado Piso (Sacada)", opcoes, key=f"s_piso_e_{id_chave}")
-                
-                cs5, cs6 = st.columns(2)
-                s_tom_int = cs5.selectbox("Tomadas/Interruptores (Sacada)", opcoes, key=f"s_ele_{id_chave}")
-                s_ilum = cs6.selectbox("Iluminação (Sacada)", opcoes_ilum, key=f"s_ilu_{id_chave}")
-
-                cs7, cs8 = st.columns(2)
-                s_tem_ralo = cs7.checkbox("Possui Ralo?", key=f"s_ralo_check_{id_chave}")
-                s_ralo_mat = ""
-                if s_tem_ralo:
-                    s_ralo_mat = cs8.text_input("Material do Ralo (ex: PVC, Inox)", key=f"s_ralo_m_{id_chave}")
-                
-                s_obs = st.text_input("Obs. Sacada", key=f"s_obs_{id_chave}")
-                
-                # Texto Sacada
-                ralo_txt = f"Com ralo de {s_ralo_mat}." if s_tem_ralo else "Sem ralo."
-                res_sacada = (f"- SACADA: Paredes {s_par_est.lower()}, teto {s_tet_est.lower()}. "
-                              f"Piso {s_piso_mat} em {s_piso_est.lower()}. "
-                              f"Elétrica {s_tom_int.lower()} e iluminação {s_ilum.lower()}. "
-                              f"{ralo_txt} {s_obs}\n")
-
-        # --- HIDRÁULICA ---
+        # --- RALO (Aparece se for sacada ou área úmida) ---
         res_hidro = ""
         molhados = ["cozinha", "banheiro", "serviço", "suíte", "lavabo", "lavanderia"]
-        if any(x in nome_exibicao.lower() for x in molhados):
+        if eh_sacada or any(x in nome_exibicao.lower() for x in molhados):
             st.markdown("---")
-            st.markdown("**7. Hidráulica**")
+            st.markdown("**7. Hidráulica / Ralo**")
             ch1, ch2 = st.columns(2)
-            met_est = ch1.selectbox("Estado Metais (Torneiras)", opcoes, key=f"met_est_s_{id_chave}")
-            lou_est = ch2.selectbox("Estado Louças (Pias/Vasos)", opcoes, key=f"lou_est_s_{id_chave}")
-            hid_obs = st.text_input("Obs. Hidráulica", key=f"hid_obs_i_{id_chave}")
-            res_hidro = f"- HIDRÁULICA: Metais em {met_est.lower()} e louças em {lou_est.lower()}. {hid_obs}\n"
+            if not eh_sacada:
+                met_est = ch1.selectbox("Estado Metais", opcoes, key=f"met_est_s_{id_chave}")
+                lou_est = ch2.selectbox("Estado Louças", opcoes, key=f"lou_est_s_{id_chave}")
+                hid_obs = st.text_input("Obs. Hidráulica", key=f"hid_obs_i_{id_chave}")
+                res_hidro = f"- HIDRÁULICA: Metais em {met_est.lower()} e louças em {lou_est.lower()}. {hid_obs}\n"
+            else:
+                s_tem_ralo = ch1.checkbox("Possui Ralo?", key=f"s_ralo_check_{id_chave}")
+                if s_tem_ralo:
+                    s_ralo_mat = ch2.text_input("Material do Ralo (ex: PVC, Inox)", key=f"s_ralo_m_{id_chave}")
+                    res_hidro = f"- RALO: Em {s_ralo_mat}.\n"
+                else:
+                    res_hidro = "- RALO: Não possui.\n"
 
     # --- MONTAGEM DO TEXTO ---
     tipos_ilum_str = ", ".join(ilu_tipo).lower()
@@ -147,15 +126,15 @@ def formulario_base(id_chave, nome_exibicao):
         else:
             txt_ilum += f" Lâmpadas funcionando: {q_func} / Queimada(s): {q_queim}."
 
-    res = f"### {nome_exibicao.upper()}\n"
+    prefixo = "SACADA DO CÔMODO" if eh_sacada else ""
+    res = f"### {prefixo} {nome_exibicao.upper()}\n"
     res += f"- PISO: {p_mat} na cor {p_cor} em {p_est.lower()}. {p_obs}\n"
     res += f"- PAREDES: Cor {par_cor}, {par_est.lower()}. TETO: Cor {tet_cor}, {tet_est.lower()}.\n"
     res += f"- PORTA: {por_mat} na cor {por_cor}, em {por_est.lower()}. Maçaneta {fec_est.lower()}.\n"
     res += f"- JANELA: {jan_mat} em {jan_est.lower()} ({q_vidros:02} vidros e {q_trincos:02} trincos). Vidros {vid_est_geral.lower()} - Estado: {vid_avaria}.\n"
     res += f"- ELÉTRICA: {q_tom} tomadas e {q_int} interruptores em {ele_est.lower()}.\n"
     res += txt_ilum + "\n"
-    if res_sacada: res += res_sacada
-    if res_hidro: res += res_hidro
+    res += res_hidro
     
     return res + "\n"
 
@@ -173,18 +152,31 @@ with st.container():
                            default=["Sala", "Cozinha", "Banheiro Social"])
 
 lista_comodos = []
-if "Sala" in outros: lista_comodos.append(("sala_0", "Sala"))
-for i in range(int(qtd_quartos)): lista_comodos.append((f"quarto_{i+1}", f"Quarto {i+1}"))
-for i in range(int(qtd_suites)): lista_comodos.append((f"suite_{i+1}", f"Suíte {i+1}"))
-if "Cozinha" in outros: lista_comodos.append(("cozinha_0", "Cozinha"))
-if "Banheiro Social" in outros: lista_comodos.append(("banheiro_social_0", "Banheiro Social"))
-if "Área de Serviço" in outros: lista_comodos.append(("area_servico_0", "Área de Serviço"))
-if "Varanda" in outros: lista_comodos.append(("varanda_0", "Varanda"))
-if "Garagem" in outros: lista_comodos.append(("garagem_0", "Garagem"))
+if "Sala" in outros: 
+    lista_comodos.append(("sala_0", "Sala", False))
+    if st.sidebar.checkbox("Adicionar Sacada na Sala?", key="chk_s_sala"):
+        lista_comodos.append(("sacada_sala", "Sala", True))
+
+for i in range(int(qtd_quartos)):
+    nome = f"Quarto {i+1}"
+    lista_comodos.append((f"quarto_{i+1}", nome, False))
+    if st.sidebar.checkbox(f"Sacada no {nome}?", key=f"chk_s_q_{i}"):
+        lista_comodos.append((f"sacada_q_{i+1}", nome, True))
+
+for i in range(int(qtd_suites)):
+    nome = f"Suíte {i+1}"
+    lista_comodos.append((f"suite_{i+1}", nome, False))
+    if st.sidebar.checkbox(f"Sacada na {nome}?", key=f"chk_s_s_{i}"):
+        lista_comodos.append((f"sacada_s_{i+1}", nome, True))
+
+# Outros cômodos padrões
+for item in ["Cozinha", "Banheiro Social", "Área de Serviço", "Varanda", "Garagem"]:
+    if item in outros:
+        lista_comodos.append((item.lower().replace(" ", "_"), item, False))
 
 relatorio_completo = ""
-for id_c, nome_c in lista_comodos:
-    relatorio_completo += formulario_base(id_c, nome_c)
+for id_c, nome_c, eh_sacada in lista_comodos:
+    relatorio_completo += formulario_base(id_c, nome_c, eh_sacada)
 
 st.markdown("---")
 st.header("📄 Relatório Finalizado")
