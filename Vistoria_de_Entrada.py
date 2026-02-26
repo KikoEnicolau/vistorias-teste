@@ -3,10 +3,11 @@ import streamlit as st
 # Configuração da página
 st.set_page_config(page_title="Vistoria Técnica Pro", page_icon="🏠", layout="centered")
 
-# --- LISTAS DE OPÇÕES ATUALIZADAS ---
+# --- LISTAS DE OPÇÕES ATUALIZADAS (Ajuste solicitado realizado aqui) ---
 OPCOES_ESTADO = ["Bom estado", "Novo", "Usado"]
 OPCOES_CORES = ["Branco", "Gelo", "Cinza", "Bege", "Preto", "Marrom", "Amadeirado", "Off-white", "Natural"]
-OPCOES_PISO_MAT = ["Piso Frio", "Cerâmico", "Porcelanato", "Laminado", "Vinílico", "Ardósia", "Taco/Madeira"]
+# Removido "Piso" de "Piso Frio" para evitar redundância no relatório
+OPCOES_PISO_MAT = ["Frio", "Cerâmico", "Porcelanato", "Laminado", "Vinílico", "Ardósia", "Taco/Madeira"]
 OPCOES_RODAPE_MAT = ["Mesmo material do piso", "Madeira/MDF", "Poliuretano", "PVC", "Cerâmico", "Poliestireno"]
 OPCOES_RALO_MAT = ["Plástico", "Inox", "Ferro"]
 
@@ -44,6 +45,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             
             p_obs = st.text_input("Obs. Piso/Rodapé", key=f"p_obs_i_{id_chave}")
             
+            # Aqui a saída agora será "PISO: Frio" em vez de "PISO: Piso Frio"
             txt_piso = f"- PISO: {p_mat} na cor {p_cor} em {p_est.lower()}."
             txt_rodape = f" RODAPÉ: {roda_mat} na cor {roda_cor} em {roda_est.lower()}."
             texto_acumulado += f"{txt_piso}{txt_rodape} {p_obs}\n"
