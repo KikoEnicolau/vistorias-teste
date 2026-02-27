@@ -144,9 +144,21 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             q_func = ci3.number_input("Funcionando", 0, 100, key=f"q_fun_n_{id_chave}")
             q_queim = ci4.number_input("Queimadas", 0, 100, key=f"q_queim_n_{id_chave}")
             
-            tipos_ajustados = [t.lower() for t in ilu_tipo]
+            # Formatação dos tipos com plural automático
+            tipos_ajustados = []
+            for t in ilu_tipo:
+                nome = t
+                if q_total > 1:
+                    if "Lâmpada" in t: nome = t.replace("Lâmpada", "Lâmpadas")
+                    if "Spot" in t: nome = t.replace("Spot", "Spots")
+                    if "Luminária" in t: nome = t.replace("Luminária", "Luminárias")
+                tipos_ajustados.append(nome.lower())
+
             i_status = f"em {ilu_est.lower()}" if ilu_est == "Bom estado" else ilu_est.lower()
+            
+            # Texto principal da iluminação agora incluindo a quantidade antes dos tipos
             txt_ilum = f"- ILUMINAÇÃO: {q_total:02} {', '.join(tipos_ajustados)} {i_status}."
+            
             if ilu_est.lower() != "sem teste":
                 txt_ilum += " Todas funcionando." if q_queim == 0 else f" Funcionando: {q_func} / Queimada: {q_queim}."
             texto_acumulado += txt_ilum + "\n"
