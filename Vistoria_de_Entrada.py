@@ -7,7 +7,7 @@ st.set_page_config(page_title="Vistoria Técnica Pro", page_icon="🏠", layout=
 OPCOES_ESTADO = ["Bom estado", "Novo", "Usado"]
 OPCOES_CORES = ["Branca", "Gelo", "Cinza", "Bege", "Preta", "Marrom", "Amadeirada", "Off-white", "Natural"]
 
-OPCOES_PISO_MAT = ["Frio", "Cerâmico", "Porcelanato", "Laminado", "Vinílico", "Ardósia", "Taco/Madeira"]
+OPCOES_PISO_MAT = ["Frio", "Cerâmico", "Porcelanato", "Laminado", "Vinílico", "Ardósia", "Taco/Mad."]
 OPCOES_RODAPE_MAT = OPCOES_PISO_MAT + ["Madeira/MDF", "Poliuretano", "PVC", "Poliestireno"]
 OPCOES_RALO_MAT = ["Plástico", "Inox", "Ferro"]
 
@@ -22,11 +22,20 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
-    # Ajuste do título para sacada
-    prefixo_titulo = "🌅 SACADA DO(A)" if eh_sacada else "📍"
-    titulo_limpo = f"{prefixo_titulo} {nome_exibicao.upper()}"
+    # Lógica de título específica solicitada
+    if eh_sacada:
+        if "sala" in nome_exibicao.lower():
+            titulo_secao = "Sacada da sala"
+        elif "quarto" in nome_exibicao.lower():
+            titulo_secao = f"Sacada do {nome_exibicao.lower()}"
+        elif "suíte" in nome_exibicao.lower():
+            titulo_secao = f"Sacada da {nome_exibicao.lower()}"
+        else:
+            titulo_secao = f"Sacada do(a) {nome_exibicao.lower()}"
+    else:
+        titulo_secao = nome_exibicao.upper()
     
-    with st.expander(titulo_limpo, expanded=True):
+    with st.expander(f"📍 {titulo_secao.upper()}", expanded=True):
         texto_acumulado = ""
 
         # --- 1. PISO E RODAPÉ ---
@@ -110,14 +119,9 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
                 v_plural = v_status_base.replace("novo", "novos").replace("usado", "usados")
                 txt_vidros = f"{q_vidros:02} vidros {v_plural}"
 
-            if tem_avaria == "Sim":
-                vid_ava = st.selectbox("Avaria:", ["Trincado", "Quebrado", "Faltando"], key=f"vid_ava_sel_{id_chave}")
-                ava_txt = vid_ava.lower() if q_vidros == 1 else vid_ava.lower() + "s"
-                txt_vidros = f"{q_vidros:02} vidros {ava_txt}"
-
             texto_acumulado += f"- JANELA: {jan_mat} {j_status} com {q_trincos} trincos e {txt_vidros}.\n"
 
-        # --- 5. ILUMINAÇÃO (IGUAL PARA TODOS) ---
+        # --- 5. ILUMINAÇÃO ---
         incluir_ilum = st.checkbox("Incluir Iluminação?", value=False, key=f"inc_ilum_{id_chave}")
         if incluir_ilum:
             st.markdown("---")
@@ -155,7 +159,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
 
             texto_acumulado += f"{txt_base}{txt_l}{txt_v}{txt_f}\n"
 
-        # --- 6. ELÉTRICA (COM CAIXA DE DISJUNTORES) ---
+        # --- 6. ELÉTRICA ---
         incluir_eletrica = st.checkbox("Incluir Elétrica?", value=False, key=f"inc_ele_{id_chave}")
         if incluir_eletrica:
             st.markdown("---")
@@ -164,31 +168,26 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             q_tom = ce1.number_input("Qtd Tomadas", 0, 50, key=f"q_tom_{id_chave}")
             q_int = ce2.number_input("Qtd Interruptores", 0, 50, key=f"q_int_{id_chave}")
             ele_est = ce3.selectbox("Estado Placas", OPCOES_ESTADO, key=f"ele_est_{id_chave}")
-            
             e_status = f"em {ele_est.lower()}" if ele_est == "Bom estado" else ele_est.lower()
             texto_acumulado += f"- ELÉTRICA: {q_tom} tomadas e {q_int} interruptores de plástico {e_status}.\n"
 
             incluir_caixa = st.checkbox("Incluir Caixa de Disjuntores?", value=False, key=f"inc_caixa_{id_chave}")
             if incluir_caixa:
-                st.write("Detalhes da Caixa de Disjuntores:")
                 cd1, cd2, cd3 = st.columns(3)
                 caixa_mat = cd1.selectbox("Material da Caixa", ["Plástico", "Ferro", "Madeira"], key=f"caixa_mat_{id_chave}")
                 caixa_portas = cd2.number_input("Qtd de portas", 1, 10, value=1, key=f"caixa_portas_{id_chave}")
-                
                 txt_portas = f"com {caixa_portas:02} porta" if caixa_portas == 1 else f"com {caixa_portas:02} portas"
                 txt_caixa_status = ""
-
                 if caixa_mat == "Ferro":
                     enferrujada = cd3.radio("Está enferrujada?", ["Não", "Sim"], key=f"caixa_enf_{id_chave}")
                     txt_caixa_status = "em bom estado" if enferrujada == "Não" else "enferrujada"
                 elif caixa_mat == "Madeira":
-                    caixa_cor = cd3.selectbox("Cor da Madeira", OPCOES_CORES, key=f"caixa_cor_{id_chave}")
+                    caixa_cor = cd3.selectbox("Cor Madeira", OPCOES_CORES, key=f"caixa_cor_{id_chave}")
                     caixa_pintura = st.radio("Pintura", ["Nova", "Usada"], key=f"caixa_pint_{id_chave}", horizontal=True)
                     txt_caixa_status = f"na cor {caixa_cor.lower()}, com pintura {caixa_pintura.lower()}"
                 else: # Plástico
                     caixa_est_p = cd3.selectbox("Estado", OPCOES_ESTADO, key=f"caixa_est_p_{id_chave}")
                     txt_caixa_status = f"em {caixa_est_p.lower()}" if caixa_est_p == "Bom estado" else caixa_est_p.lower()
-
                 texto_acumulado += f"- CAIXA DE DISJUNTORES: {caixa_mat} {txt_portas} {txt_caixa_status}.\n"
 
         # --- 7. RALO ---
@@ -203,8 +202,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
                 ra_status = f"em {r_est.lower()}" if r_est == "Bom estado" else r_est.lower()
                 texto_acumulado += f"- RALO: {r_mat} {ra_status}.\n"
 
-    prefixo_relatorio = f"### SACADA DO(A) {nome_exibicao.upper()}" if eh_sacada else f"### {nome_exibicao.upper()}"
-    return f"{prefixo_relatorio}\n{texto_acumulado}\n"
+    return f"### {titulo_secao.upper()}\n{texto_acumulado}\n"
 
 # --- INTERFACE PRINCIPAL ---
 st.title("📋 Vistoria Pro")
