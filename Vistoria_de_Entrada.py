@@ -33,7 +33,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
     with st.expander(f"📍 {titulo_secao.upper()}", expanded=True):
         texto_acumulado = ""
 
-        # Funções de formatação de texto para o relatório
+        # Funções de formatação
         def fmt_est_masculino(estado):
             return "em bom estado" if estado == "Bom estado" else estado.lower()
         
@@ -78,7 +78,6 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
         if incluir_par:
             st.markdown("---")
             st.markdown("#### 2. Paredes e Teto")
-            
             tipo_parede = st.radio("Tipo de Parede:", ["Alvenaria (Pintura)", "Azulejos (Total)", "Meia Parede"], key=f"tipo_par_{id_chave}", horizontal=True)
             
             c4, c5 = st.columns(2)
@@ -86,20 +85,15 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             tet_est = c5.selectbox("Estado Teto", OPCOES_ESTADO, key=f"tet_est_s_{id_chave}")
             
             txt_parede_final = ""
-            
             if tipo_parede == "Alvenaria (Pintura)":
                 c_p1, c_p2 = st.columns(2)
                 par_cor = c_p1.selectbox("Cor Pintura", OPCOES_CORES, key=f"par_cor_{id_chave}")
                 par_est = c_p2.selectbox("Estado Pintura", OPCOES_ESTADO, key=f"par_est_{id_chave}")
-                # Escrita direta sem a palavra ALVENARIA
                 txt_parede_final = f"Cor {par_cor.lower()} {fmt_est_feminino(par_est)}"
-            
             elif tipo_parede == "Azulejos (Total)":
                 azu_est = st.selectbox("Estado dos Azulejos", OPCOES_ESTADO, key=f"azu_est_{id_chave}")
                 txt_parede_final = f"Com revestimento de azulejos até o teto {fmt_est_masculino(azu_est)}"
-            
             else: # Meia Parede
-                st.write("Detalhes da Meia Parede:")
                 m1, m2, m3 = st.columns(3)
                 m_azu_est = m1.selectbox("Estado Azulejo (Baixo)", OPCOES_ESTADO, key=f"m_azu_{id_chave}")
                 m_cor_cima = m2.selectbox("Cor Alvenaria (Cima)", OPCOES_CORES, key=f"m_cor_{id_chave}")
@@ -118,10 +112,9 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             por_cor = cp2.selectbox("Cor", OPCOES_CORES, key=f"p_cor_p_s_{id_chave}")
             por_est = cp3.selectbox("Estado", OPCOES_ESTADO, key=f"p_est_p_s_{id_chave}")
             fec_est = cp4.selectbox("Maçaneta", ["Funcionando", "Com folga", "Sem chave", "Oxidada"], key=f"fec_s_{id_chave}")
-            
             texto_acumulado += f"- PORTA: {por_mat} na cor {por_cor.lower()} {fmt_est_feminino(por_est)}. Maçaneta {fec_est.lower()}.\n"
 
-        # --- 4. JANELAS ---
+        # --- 4. JANELAS (CORREÇÃO DE PLURAL/SINGULAR) ---
         incluir_janela = st.checkbox("Incluir Janelas?", value=False, key=f"inc_janela_{id_chave}")
         if incluir_janela:
             st.markdown("---")
@@ -133,9 +126,16 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             cj4, cj5 = st.columns(2)
             q_vidros = cj4.number_input("Qtd Vidros", 0, 20, value=1, key=f"q_vid_{id_chave}")
             q_trincos = cj5.number_input("Qtd Trincos", 0, 10, value=1, key=f"q_tri_{id_chave}")
+            
+            # Lógica de Plural/Singular
+            txt_trinco = "trinco" if q_trincos == 1 else "trincos"
+            txt_vidro_nome = "vidro" if q_vidros == 1 else "vidros"
+            
             v_status = vid_est_geral.lower() if vid_est_geral != "Bom estado" else "em bom estado"
-            txt_v = f"{q_vidros:02} vidro(s) {v_status.replace('novo', 'novos').replace('usado', 'usados')}"
-            texto_acumulado += f"- JANELA: {jan_mat} {jan_est.lower()} com {q_trincos} trincos e {txt_v}.\n"
+            if q_vidros > 1:
+                v_status = v_status.replace("novo", "novos").replace("usado", "usados")
+            
+            texto_acumulado += f"- JANELA: {jan_mat} {jan_est.lower()} com {q_trincos} {txt_trinco} e {q_vidros:02} {txt_vidro_nome} {v_status}.\n"
 
         # --- 5. ILUMINAÇÃO ---
         incluir_ilum = st.checkbox("Incluir Iluminação?", value=False, key=f"inc_ilum_{id_chave}")
