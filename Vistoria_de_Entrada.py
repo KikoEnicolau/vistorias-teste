@@ -181,7 +181,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
                     enferrujada = cd3.radio("Está enferrujada?", ["Não", "Sim"], key=f"caixa_enf_{id_chave}")
                     txt_caixa_status = "em bom estado" if enferrujada == "Não" else "enferrujada"
                 
-                elif caixa_mat == "fadeira":
+                elif caixa_mat == "madeira":
                     caixa_cor = cd3.selectbox("Cor da Madeira", OPCOES_CORES, key=f"caixa_cor_{id_chave}")
                     caixa_pintura = st.radio("Pintura", ["Nova", "Usada"], key=f"caixa_pint_{id_chave}", horizontal=True)
                     txt_caixa_status = f"na cor {caixa_cor.lower()}, com pintura {caixa_pintura.lower()}"
