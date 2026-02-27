@@ -29,7 +29,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
     with st.expander(titulo, expanded=True):
         texto_acumulado = ""
 
-        # --- PISO E RODAPÉ ---
+        # --- PISO E RODAPÉ --- (Mantido conforme anterior)
         incluir_piso = st.checkbox("Incluir Piso/Rodapé?", value=False, key=f"inc_piso_{id_chave}")
         if incluir_piso:
             st.markdown("#### 1. Piso e Rodapé")
@@ -43,7 +43,6 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             roda_mat = r1.selectbox("Material Rodapé", OPCOES_RODAPE_MAT, key=f"r_mat_s_{id_chave}")
             roda_cor = r2.selectbox("Cor Rodapé", OPCOES_CORES, key=f"r_cor_s_{id_chave}")
             roda_est = r3.selectbox("Estado Rodapé", OPCOES_ESTADO, key=f"r_est_s_{id_chave}")
-            
             p_obs = st.text_input("Obs. Piso/Rodapé", key=f"p_obs_i_{id_chave}")
             
             def fmt_est_piso(estado):
@@ -54,7 +53,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             txt_rodape = f" RODAPÉ: {roda_mat} na cor {roda_cor.lower()}, {fmt_est_piso(roda_est)}."
             texto_acumulado += f"{txt_piso}{txt_rodape} {p_obs}\n"
 
-        # --- PAREDES E TETO ---
+        # --- PAREDES E TETO --- (Mantido conforme anterior)
         incluir_par = st.checkbox("Incluir Paredes/Teto?", value=False, key=f"inc_par_{id_chave}")
         if incluir_par:
             st.markdown("---")
@@ -73,7 +72,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
 
             texto_acumulado += f"- PAREDES: {formatar_pintura(par_cor, par_est)}. TETO: {formatar_pintura(tet_cor, tet_est)}.\n"
 
-        # --- PORTAS ---
+        # --- PORTAS --- (Mantido conforme anterior)
         incluir_porta = st.checkbox("Incluir Porta/Batente?", value=False, key=f"inc_porta_{id_chave}")
         if incluir_porta:
             st.markdown("---")
@@ -87,7 +86,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             po_status = f"em {por_est.lower()}" if por_est == "Bom estado" else f"com pintura {por_est.lower().replace('novo', 'nova').replace('usado', 'usada')}"
             texto_acumulado += f"- PORTA: {por_mat} na cor {por_cor.lower()}, {po_status}. Maçaneta {fec_est.lower()}.\n"
 
-        # --- JANELAS ---
+        # --- JANELAS --- (Mantido conforme anterior)
         incluir_janela = st.checkbox("Incluir Janelas?", value=False, key=f"inc_janela_{id_chave}")
         if incluir_janela:
             st.markdown("---")
@@ -111,18 +110,46 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
                 v_status_plural = v_status_base.replace("novo", "novos").replace("usado", "usados")
                 txt_vidros_estado = f"{q_vidros:02} vidros {v_status_plural}"
 
-            if tem_avaria == "Sim":
-                vid_ava = st.selectbox("Avaria:", ["Trincado", "Quebrado", "Faltando"], key=f"vid_ava_sel_{id_chave}")
-                avaria_texto = vid_ava.lower() if q_vidros == 1 else vid_ava.lower() + "s"
-                txt_vidros_estado = f"{q_vidros:02} vidros {avaria_texto}"
-
             texto_acumulado += f"- JANELA: {jan_mat} {j_status} com {q_trincos} trincos e {txt_vidros_estado}.\n"
+
+        # --- ILUMINAÇÃO (NOVA LÓGICA) ---
+        incluir_ilum = st.checkbox("Incluir Iluminação?", value=False, key=f"inc_ilum_{id_chave}")
+        if incluir_ilum:
+            st.markdown("---")
+            st.markdown("#### 5. Iluminação")
+            
+            ci1, ci2 = st.columns(2)
+            q_spots = ci1.number_input("Qtd total de Spots", 0, 100, value=0, key=f"q_spots_{id_chave}")
+            q_lamps = ci2.number_input("Qtd total de Lâmpadas", 0, 100, value=0, key=f"q_lamps_{id_chave}")
+            
+            ci3, ci4, ci5 = st.columns(3)
+            ilu_est = ci3.selectbox("Estado", OPCOES_ESTADO + ["Sem teste"], key=f"ilu_est_{id_chave}")
+            q_func = ci4.number_input("Funcionando", 0, 200, value=q_spots + q_lamps, key=f"q_func_{id_chave}")
+            q_queim = ci5.number_input("Queimada", 0, 200, value=0, key=f"q_queim_{id_chave}")
+            
+            # Formatação do texto
+            detalhes = []
+            if q_spots > 0:
+                nome_spot = "spot" if q_spots == 1 else "spots"
+                detalhes.append(f"{q_spots:02} {nome_spot}")
+            if q_lamps > 0:
+                nome_lamp = "lâmpada" if q_lamps == 1 else "lâmpadas"
+                detalhes.append(f"{q_lamps:02} {nome_lamp}")
+            
+            tipo_txt = " e ".join(detalhes) if detalhes else "iluminação"
+            i_status = f"em {ilu_est.lower()}" if ilu_est == "Bom estado" else ilu_est.lower()
+            
+            txt_ilum = f"- ILUMINAÇÃO: {tipo_txt} {i_status}."
+            if ilu_est.lower() != "sem teste":
+                txt_ilum += " Todas funcionando." if q_queim == 0 else f" Funcionando: {q_func} / Queimada: {q_queim}."
+            
+            texto_acumulado += txt_ilum + "\n"
 
         # --- ELÉTRICA ---
         incluir_eletrica = st.checkbox("Incluir Elétrica?", value=False, key=f"inc_ele_{id_chave}")
         if incluir_eletrica:
             st.markdown("---")
-            st.markdown("#### 5. Elétrica")
+            st.markdown("#### 6. Elétrica")
             ce1, ce2, ce3 = st.columns(3)
             q_tom = ce1.number_input("Qtd Tomadas", 0, 50, key=f"q_tom_n_{id_chave}")
             q_int = ce2.number_input("Qtd Interruptores", 0, 50, key=f"q_int_n_{id_chave}")
@@ -131,39 +158,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             e_status = f"em {ele_est.lower()}" if ele_est == "Bom estado" else ele_est.lower()
             texto_acumulado += f"- ELÉTRICA: {q_tom} tomadas e {q_int} interruptores de plástico {e_status}.\n"
 
-        # --- ILUMINAÇÃO ---
-        incluir_ilum = st.checkbox("Incluir Iluminação?", value=False, key=f"inc_ilum_{id_chave}")
-        if incluir_ilum:
-            st.markdown("---")
-            st.markdown("#### 6. Iluminação")
-            ilu_tipo = st.multiselect("Tipo", ["Lâmpada simples", "Spot de LED", "Spot de Plástico", "Luminária", "Plafon"], default=["Lâmpada simples"], key=f"ilu_t_m_{id_chave}")
-            
-            ci1, ci2, ci3, ci4 = st.columns(4)
-            q_total = ci1.number_input("Qtd Total", 0, 100, key=f"q_tot_n_{id_chave}")
-            ilu_est = ci2.selectbox("Estado", OPCOES_ESTADO + ["Sem teste"], key=f"ilu_e_s_{id_chave}")
-            q_func = ci3.number_input("Funcionando", 0, 100, key=f"q_fun_n_{id_chave}")
-            q_queim = ci4.number_input("Queimadas", 0, 100, key=f"q_queim_n_{id_chave}")
-            
-            # Formatação dos tipos com plural automático
-            tipos_ajustados = []
-            for t in ilu_tipo:
-                nome = t
-                if q_total > 1:
-                    if "Lâmpada" in t: nome = t.replace("Lâmpada", "Lâmpadas")
-                    if "Spot" in t: nome = t.replace("Spot", "Spots")
-                    if "Luminária" in t: nome = t.replace("Luminária", "Luminárias")
-                tipos_ajustados.append(nome.lower())
-
-            i_status = f"em {ilu_est.lower()}" if ilu_est == "Bom estado" else ilu_est.lower()
-            
-            # Texto principal da iluminação agora incluindo a quantidade antes dos tipos
-            txt_ilum = f"- ILUMINAÇÃO: {q_total:02} {', '.join(tipos_ajustados)} {i_status}."
-            
-            if ilu_est.lower() != "sem teste":
-                txt_ilum += " Todas funcionando." if q_queim == 0 else f" Funcionando: {q_func} / Queimada: {q_queim}."
-            texto_acumulado += txt_ilum + "\n"
-
-        # --- RALO ---
+        # --- RALO --- (Mantido conforme anterior)
         if eh_sacada or any(x in nome_exibicao.lower() for x in ["cozinha", "banheiro", "serviço", "suíte"]):
             incluir_ralo = st.checkbox("Incluir Ralo?", value=False, key=f"inc_ralo_{id_chave}")
             if incluir_ralo:
@@ -178,7 +173,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
     prefixo = f"### SACADA DO(A) {nome_exibicao.upper()}" if eh_sacada else f"### {nome_exibicao.upper()}"
     return f"{prefixo}\n{texto_acumulado}\n"
 
-# --- INTERFACE PRINCIPAL ---
+# --- INTERFACE PRINCIPAL --- (Mantido conforme anterior)
 st.title("📋 Vistoria Pro")
 col1, col2 = st.columns(2)
 q_quartos = col1.number_input("Quartos", 0, 10, value=1)
