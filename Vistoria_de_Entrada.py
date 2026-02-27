@@ -30,7 +30,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
         # --- 1. PISO E RODAPÉ ---
         incluir_piso = st.checkbox("Incluir Piso/Rodapé?", value=False, key=f"inc_piso_{id_chave}")
         if incluir_piso:
-            st.markdown("#### 1. Piso e Rodapé")
+            st.markdown("#### 1. piso e rodapé")
             c1, c2, c3 = st.columns(3)
             p_mat = c1.selectbox("Material Piso", OPCOES_PISO_MAT, key=f"p_mat_s_{id_chave}")
             p_cor = c2.selectbox("Cor Piso", OPCOES_CORES, key=f"p_cor_s_{id_chave}")
