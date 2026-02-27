@@ -46,7 +46,6 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             
             p_obs = st.text_input("Obs. Piso/Rodapé", key=f"p_obs_i_{id_chave}")
             
-            # Formatação do estado para Piso/Rodapé
             def fmt_est_piso(estado):
                 if estado == "Bom estado": return "em bom estado"
                 return estado.lower()
@@ -104,23 +103,20 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             tem_avaria = cj6.radio("Avarias no vidro?", ["Não", "Sim"], key=f"vid_radio_{id_chave}")
             
             j_status = f"em {jan_est.lower()}" if jan_est == "Bom estado" else jan_est.lower()
-            v_status = f"em {vid_est_geral.lower()}" if vid_est_geral == "Bom estado" else vid_est_geral.lower()
+            v_status_base = f"em {vid_est_geral.lower()}" if vid_est_geral == "Bom estado" else vid_est_geral.lower()
             
-            # Se for 1 vidro, escreve no singular. Se for mais, troca 'novo' por 'novos', etc.
             if q_vidros == 1:
-                txt_vidros_estado = f"01 vidro {v_status}"
+                txt_vidros_estado = f"01 vidro {v_status_base}"
             else:
-                # Usamos o .replace para colocar o 's' no final das palavras
-                v_status_plural = v_status.replace("novo", "novos").replace("usado", "usados")
+                v_status_plural = v_status_base.replace("novo", "novos").replace("usado", "usados")
                 txt_vidros_estado = f"{q_vidros:02} vidros {v_status_plural}"
 
             if tem_avaria == "Sim":
                 vid_ava = st.selectbox("Avaria:", ["Trincado", "Quebrado", "Faltando"], key=f"vid_ava_sel_{id_chave}")
-                # Se for mais de 1 vidro, coloca um 's' na avaria
                 avaria_texto = vid_ava.lower() if q_vidros == 1 else vid_ava.lower() + "s"
                 txt_vidros_estado = f"{q_vidros:02} vidros {avaria_texto}"
 
-            texto_acumulado += f"- JANELA: {jan_mat} {j_status} com {q_trincos} trincos e {q_vidros} vidros {v_status.capitalize()}.\n"
+            texto_acumulado += f"- JANELA: {jan_mat} {j_status} com {q_trincos} trincos e {txt_vidros_estado}.\n"
 
         # --- ELÉTRICA ---
         incluir_eletrica = st.checkbox("Incluir Elétrica?", value=False, key=f"inc_ele_{id_chave}")
@@ -133,7 +129,6 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             ele_est = ce3.selectbox("Estado Placas", OPCOES_ESTADO, key=f"ele_est_s_{id_chave}")
             
             e_status = f"em {ele_est.lower()}" if ele_est == "Bom estado" else ele_est.lower()
-            # Adicionado "de plástico" conforme solicitado
             texto_acumulado += f"- ELÉTRICA: {q_tom} tomadas e {q_int} interruptores de plástico {e_status}.\n"
 
         # --- ILUMINAÇÃO ---
@@ -149,19 +144,10 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             q_func = ci3.number_input("Funcionando", 0, 100, key=f"q_fun_n_{id_chave}")
             q_queim = ci4.number_input("Queimadas", 0, 100, key=f"q_queim_n_{id_chave}")
             
-            tipos_ajustados = []
-            for t in ilu_tipo:
-                nome = t
-                if q_total > 1:
-                    if "Spot" in t: nome = t.replace("Spot", "Spots")
-                    if "Lâmpada" in t: nome = t.replace("Lâmpada", "Lâmpadas")
-                    if "Luminária" in t: nome = t.replace("Luminária", "Luminárias")
-                tipos_ajustados.append(nome.lower())
-
+            tipos_ajustados = [t.lower() for t in ilu_tipo]
             i_status = f"em {ilu_est.lower()}" if ilu_est == "Bom estado" else ilu_est.lower()
             txt_ilum = f"- ILUMINAÇÃO: {q_total:02} {', '.join(tipos_ajustados)} {i_status}."
             if ilu_est.lower() != "sem teste":
-                # Alterado de "Ok" para "Funcionando" conforme solicitado
                 txt_ilum += " Todas funcionando." if q_queim == 0 else f" Funcionando: {q_func} / Queimada: {q_queim}."
             texto_acumulado += txt_ilum + "\n"
 
