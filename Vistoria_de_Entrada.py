@@ -115,7 +115,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
                 txt_vidros_estado = f"{q_vidros:02} vidros {v_status_plural}"
 
             if tem_avaria == "Sim":
-            vid_ava = st.selectbox("Avaria:", ["Trincado", "Quebrado", "Faltando"], key=f"vid_ava_sel_{id_chave}")
+                vid_ava = st.selectbox("Avaria:", ["Trincado", "Quebrado", "Faltando"], key=f"vid_ava_sel_{id_chave}")
                 # Se for mais de 1 vidro, coloca um 's' na avaria
                 avaria_texto = vid_ava.lower() if q_vidros == 1 else vid_ava.lower() + "s"
                 txt_vidros_estado = f"{q_vidros:02} vidros {avaria_texto}"
