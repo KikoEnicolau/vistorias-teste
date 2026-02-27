@@ -6,7 +6,6 @@ st.set_page_config(page_title="Vistoria Técnica Pro", page_icon="🏠", layout=
 # --- LISTAS DE OPÇÕES ---
 OPCOES_ESTADO = ["Bom estado", "Novo", "Usado"]
 OPCOES_CORES = ["Branca", "Gelo", "Cinza", "Bege", "Preta", "Marrom", "Amadeirada", "Off-white", "Natural"]
-
 OPCOES_PISO_MAT = ["Frio", "Cerâmico", "Porcelanato", "Laminado", "Vinílico", "Ardósia", "Taco/Mad."]
 OPCOES_RODAPE_MAT = OPCOES_PISO_MAT + ["Madeira/MDF", "Poliuretano", "PVC", "Poliestireno"]
 OPCOES_RALO_MAT = ["Plástico", "Inox", "Ferro"]
@@ -49,10 +48,8 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
 
             txt_piso = f"- PISO: {p_mat} na cor {p_cor.lower()}, {fmt_est(p_est)}."
             
-            # Lógica Condicional: APENAS Cozinha, Banheiro Social e Banheiro da Suíte
-            # Verificamos se é banheiro ou cozinha, mas ignoramos se for apenas a Suíte (quarto)
             nome_lc = nome_exibicao.lower()
-            eh_area_sem_rodape_padrao = "cozinha" in nome_lc or "banheiro" in nome_lc or "serviço" in nome_lc
+            eh_area_sem_rodape_padrao = any(x in nome_lc for x in ["cozinha", "banheiro", "serviço", "lavanderia"])
             
             mostrar_rodape = True
             if eh_area_sem_rodape_padrao:
@@ -74,18 +71,44 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
         if incluir_par:
             st.markdown("---")
             st.markdown("#### 2. Paredes e Teto")
-            c4, c5, c6, c7 = st.columns(4)
-            par_cor = c4.selectbox("Cor Paredes", OPCOES_CORES, key=f"par_cor_s_{id_chave}")
-            par_est = c5.selectbox("Estado Paredes", OPCOES_ESTADO, key=f"par_est_s_{id_chave}")
-            tet_cor = c6.selectbox("Cor Teto", OPCOES_CORES, key=f"tet_cor_s_{id_chave}")
-            tet_est = c7.selectbox("Estado Teto", OPCOES_ESTADO, key=f"tet_est_s_{id_chave}")
             
-            def formatar_pintura(cor, estado):
-                est_txt = estado.lower().replace("novo", "nova").replace("usado", "usada")
-                if "bom estado" in est_txt: return f"Cor {cor.lower()}, em bom estado"
-                return f"Cor {cor.lower()}, com pintura {est_txt}"
+            # Escolha do tipo de parede
+            tipo_parede = st.radio("Tipo de Parede:", ["Alvenaria (Pintura)", "Azulejos (Total)", "Meia Parede (Alvenaria + Azulejo)"], key=f"tipo_par_{id_chave}", horizontal=True)
+            
+            c4, c5 = st.columns(2)
+            tet_cor = c4.selectbox("Cor Teto", OPCOES_CORES, key=f"tet_cor_s_{id_chave}")
+            tet_est = c5.selectbox("Estado Teto", OPCOES_ESTADO, key=f"tet_est_s_{id_chave}")
+            
+            txt_parede_final = ""
+            
+            if tipo_parede == "Alvenaria (Pintura)":
+                c_p1, c_p2 = st.columns(2)
+                par_cor = c_p1.selectbox("Cor Pintura", OPCOES_CORES, key=f"par_cor_{id_chave}")
+                par_est = c_p2.selectbox("Estado Pintura", OPCOES_ESTADO, key=f"par_est_{id_chave}")
+                est_txt = par_est.lower().replace("novo", "nova").replace("usado", "usada")
+                st_p = f"em bom estado" if "bom" in est_txt else f"com pintura {est_txt}"
+                txt_parede_final = f"ALVENARIA: Cor {par_cor.lower()}, {st_p}"
+            
+            elif tipo_parede == "Azulejos (Total)":
+                c_p1, c_p2 = st.columns(2)
+                azu_est = c_p1.selectbox("Estado Azulejos", OPCOES_ESTADO, key=f"azu_est_{id_chave}")
+                rej_est = c_p2.selectbox("Estado Rejunte", ["Bom estado", "Escurecido", "Faltante", "Novo"], key=f"rej_est_{id_chave}")
+                txt_parede_final = f"AZULEJOS: Totalmente revestido, {azu_est.lower()}, rejunte {rej_est.lower()}"
+            
+            else: # Meia Parede
+                st.write("Detalhes da Meia Parede:")
+                m1, m2, m3 = st.columns(3)
+                m_cor = m1.selectbox("Cor Pintura (Cima)", OPCOES_CORES, key=f"m_cor_{id_chave}")
+                m_azu = m2.selectbox("Estado Azulejo (Baixo)", OPCOES_ESTADO, key=f"m_azu_{id_chave}")
+                m_rej = m3.selectbox("Estado Rejunte", ["Bom estado", "Escurecido", "Faltante"], key=f"m_rej_{id_chave}")
+                txt_parede_final = f"MEIA PAREDE: Alvenaria na cor {m_cor.lower()} e azulejos {m_azu.lower()} (rejunte {m_rej.lower()})"
 
-            texto_acumulado += f"- PAREDES: {formatar_pintura(par_cor, par_est)}. TETO: {formatar_pintura(tet_cor, tet_est)}.\n"
+            def fmt_teto(cor, est):
+                est_txt = est.lower().replace("novo", "nova").replace("usado", "usada")
+                st_t = "em bom estado" if "bom" in est_txt else f"com pintura {est_txt}"
+                return f"TETO: Cor {cor.lower()}, {st_t}"
+
+            texto_acumulado += f"- PAREDES: {txt_parede_final}. {fmt_teto(tet_cor, tet_est)}.\n"
 
         # --- 3. PORTAS ---
         incluir_porta = st.checkbox("Incluir Porta/Batente?", value=False, key=f"inc_porta_{id_chave}")
@@ -110,15 +133,11 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             jan_mat = cj1.selectbox("Material Janela", ["Alumínio", "Madeira", "Ferro"], key=f"j_mat_s_{id_chave}")
             jan_est = cj2.selectbox("Estado Janela", OPCOES_ESTADO, key=f"jan_est_s_{id_chave}")
             vid_est_geral = cj3.selectbox("Estado Vidros", OPCOES_ESTADO, key=f"vid_est_s_{id_chave}")
-            
-            cj4, cj5, cj6 = st.columns(3)
+            cj4, cj5 = st.columns(2)
             q_vidros = cj4.number_input("Qtd Vidros", 0, 20, value=1, key=f"q_vid_{id_chave}")
             q_trincos = cj5.number_input("Qtd Trincos", 0, 10, value=1, key=f"q_tri_{id_chave}")
-            tem_avaria = cj6.radio("Avarias no vidro?", ["Não", "Sim"], key=f"vid_radio_{id_chave}")
-            
             v_status_base = vid_est_geral.lower() if vid_est_geral != "Bom estado" else "em bom estado"
             txt_vidros = f"{q_vidros:02} vidro(s) {v_status_base.replace('novo', 'novos').replace('usado', 'usados')}"
-
             texto_acumulado += f"- JANELA: {jan_mat} {jan_est.lower()} com {q_trincos} trincos e {txt_vidros}.\n"
 
         # --- 5. ILUMINAÇÃO ---
@@ -128,33 +147,15 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             st.markdown("#### 5. Iluminação")
             ci1, ci2, ci3 = st.columns(3)
             tipo_ilu = ci1.selectbox("Tipo", ["Spot de plástico", "Plafon de vidro", "Luminária de vidro", "Luminária led", "Lâmpada dicroica"], key=f"t_ilu_{id_chave}")
-            q_tipo = ci2.number_input(f"Qtd total de {tipo_ilu.lower()}s", 0, 100, value=1, key=f"q_t_ilu_{id_chave}")
+            q_tipo = ci2.number_input(f"Qtd {tipo_ilu.lower()}s", 0, 100, value=1, key=f"q_t_ilu_{id_chave}")
             est_tipo = ci3.selectbox("Estado estrutura", OPCOES_ESTADO, key=f"e_t_ilu_{id_chave}")
-
-            st.write("Sobre as Lâmpadas:")
             ci4, ci5, ci6 = st.columns(3)
-            q_lamps = ci4.number_input("Qtd total de Lâmpadas", 0, 100, value=1, key=f"q_l_{id_chave}")
+            q_lamps = ci4.number_input("Qtd Lâmpadas", 0, 100, value=1, key=f"q_l_{id_chave}")
             est_lamps = ci5.selectbox("Estado Lâmpadas", OPCOES_ESTADO, key=f"e_l_{id_chave}")
-            q_vazios = ci6.number_input("Qtd spots sem lâmpada", 0, 100, value=0, key=f"q_v_{id_chave}")
-
-            ci7, ci8 = st.columns(2)
-            q_func = ci7.number_input("Funcionando", 0, 100, value=q_lamps, key=f"q_f_{id_chave}")
-            q_queim = ci8.number_input("Queimada", 0, 100, value=0, key=f"q_q_{id_chave}")
-
-            nome_tipo = tipo_ilu.lower() if q_tipo == 1 else f"{tipo_ilu.lower()}s"
-            status_estru = fmt_est(est_tipo)
-            txt_base = f"- ILUMINAÇÃO: {q_tipo:02} {nome_tipo} {status_estru}"
-
+            q_vazios = ci6.number_input("Qtd sem lâmpada", 0, 100, value=0, key=f"q_v_{id_chave}")
             status_l = fmt_est(est_lamps)
-            if q_lamps == 0: txt_l = ", sem lâmpadas"
-            else: txt_l = f" com {q_lamps:02} lâmpada(s) {status_l}"
-
-            txt_v = f", sendo {q_vazios:02} sem lâmpadas" if q_vazios > 0 else ""
-            txt_f = ""
-            if q_lamps > 0:
-                txt_f = ". Todas funcionando." if q_queim == 0 else f". Funcionando: {q_func:02} / Queimada: {q_queim:02}."
-
-            texto_acumulado += f"{txt_base}{txt_l}{txt_v}{txt_f}\n"
+            txt_l = f" com {q_lamps:02} lâmpada(s) {status_l}" if q_lamps > 0 else ", sem lâmpadas"
+            texto_acumulado += f"- ILUMINAÇÃO: {q_tipo:02} {tipo_ilu.lower()}(s) {fmt_est(est_tipo)}{txt_l}.\n"
 
         # --- 6. ELÉTRICA ---
         incluir_eletrica = st.checkbox("Incluir Elétrica?", value=False, key=f"inc_ele_{id_chave}")
@@ -166,26 +167,19 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             q_int = ce2.number_input("Qtd Interruptores", 0, 50, key=f"q_int_{id_chave}")
             ele_est = ce3.selectbox("Estado Placas", OPCOES_ESTADO, key=f"ele_est_{id_chave}")
             texto_acumulado += f"- ELÉTRICA: {q_tom} tomadas e {q_int} interruptores de plástico {fmt_est(ele_est)}.\n"
-
-            incluir_caixa = st.checkbox("Incluir Caixa de Disjuntores?", value=False, key=f"inc_caixa_{id_chave}")
-            if incluir_caixa:
+            if st.checkbox("Incluir Caixa de Disjuntores?", value=False, key=f"inc_caixa_{id_chave}"):
                 cd1, cd2, cd3 = st.columns(3)
-                caixa_mat = cd1.selectbox("Material da Caixa", ["Plástico", "Ferro", "Madeira"], key=f"caixa_mat_{id_chave}")
+                caixa_mat = cd1.selectbox("Material Caixa", ["Plástico", "Ferro", "Madeira"], key=f"caixa_mat_{id_chave}")
                 caixa_portas = cd2.number_input("Qtd portas", 1, 10, value=1, key=f"caixa_portas_{id_chave}")
                 if caixa_mat == "Ferro":
-                    enf = cd3.radio("Enferrujada?", ["Não", "Sim"], key=f"caixa_enf_{id_chave}")
-                    st_c = "em bom estado" if enf == "Não" else "enferrujada"
+                    st_c = "em bom estado" if cd3.radio("Enferrujada?", ["Não", "Sim"], key=f"caixa_enf_{id_chave}") == "Não" else "enferrujada"
                 elif caixa_mat == "Madeira":
-                    c_cor = cd3.selectbox("Cor Madeira", OPCOES_CORES, key=f"caixa_cor_{id_chave}")
-                    c_pint = st.radio("Pintura", ["Nova", "Usada"], key=f"caixa_pint_{id_chave}", horizontal=True)
-                    st_c = f"na cor {c_cor.lower()}, pintura {c_pint.lower()}"
-                else: 
-                    est_p = cd3.selectbox("Estado", OPCOES_ESTADO, key=f"caixa_est_p_{id_chave}")
-                    st_c = fmt_est(est_p)
+                    st_c = f"na cor {cd3.selectbox('Cor', OPCOES_CORES, key=f'c_cor_{id_chave}').lower()}"
+                else: st_c = fmt_est(cd3.selectbox("Estado", OPCOES_ESTADO, key=f"caixa_est_p_{id_chave}"))
                 texto_acumulado += f"- CAIXA DE DISJUNTORES: {caixa_mat} com {caixa_portas:02} porta(s) {st_c}.\n"
 
         # --- 7. RALO ---
-        if any(x in nome_exibicao.lower() for x in ["cozinha", "banheiro", "serviço", "suíte", "sacada"]) or eh_sacada:
+        if any(x in nome_exibicao.lower() for x in ["cozinha", "banheiro", "serviço", "lavanderia", "sacada"]) or eh_sacada:
             incluir_ralo = st.checkbox("Incluir Ralo?", value=False, key=f"inc_ralo_{id_chave}")
             if incluir_ralo:
                 st.markdown("---")
@@ -202,10 +196,9 @@ st.title("📋 Vistoria Pro")
 col1, col2 = st.columns(2)
 q_quartos = col1.number_input("Quartos", 0, 10, value=1)
 q_suites = col2.number_input("Suítes", 0, 10, value=0)
-outros = st.multiselect("Áreas:", ["Sala", "Cozinha", "Banheiro Social", "Área de Serviço", "Garagem"], default=["Sala", "Cozinha"])
+outros = st.multiselect("Áreas:", ["Sala", "Cozinha", "Banheiro Social", "Área de Serviço", "Lavanderia", "Garagem"], default=["Sala", "Cozinha"])
 
 relatorio_total = ""
-
 if "Sala" in outros:
     relatorio_total += formulario_base("sala_0", "Sala")
     if st.checkbox("Sala tem sacada?", key="chk_sac_sala"):
@@ -218,16 +211,10 @@ for i in range(int(q_quartos)):
         relatorio_total += formulario_base(f"sacada_q_{i+1}", nome, eh_sacada=True)
 
 for i in range(int(q_suites)):
-    nome_quarto = f"Suíte {i+1}"
-    nome_banheiro = f"Banheiro da Suíte {i+1}"
-    
-    # 1. Formulário do Quarto da Suíte
-    relatorio_total += formulario_base(f"suite_q_{i+1}", nome_quarto)
-    if st.checkbox(f"{nome_quarto} tem sacada?", key=f"chk_sac_s_{i}"):
-        relatorio_total += formulario_base(f"sacada_s_{i+1}", nome_quarto, eh_sacada=True)
-    
-    # 2. Formulário do Banheiro da Suíte (Onde o rodapé será opcional)
-    relatorio_total += formulario_base(f"suite_b_{i+1}", nome_banheiro)
+    relatorio_total += formulario_base(f"suite_q_{i+1}", f"Quarto da Suíte {i+1}")
+    if st.checkbox(f"Suíte {i+1} tem sacada?", key=f"chk_sac_s_{i}"):
+        relatorio_total += formulario_base(f"sacada_s_{i+1}", f"Suíte {i+1}", eh_sacada=True)
+    relatorio_total += formulario_base(f"suite_b_{i+1}", f"Banheiro da Suíte {i+1}")
 
 for item in outros:
     if item != "Sala":
