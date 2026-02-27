@@ -190,7 +190,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
                     caixa_est_p = cd3.selectbox("Estado", OPCOES_ESTADO, key=f"caixa_est_p_{id_chave}")
                     txt_caixa_status = f"em {caixa_est_p.lower()}" if caixa_est_p == "Bom estado" else caixa_est_p.lower()
 
-                texto_acumulado += f"- CAIXA DE DISJUNTORES: {caixa_mat} {txt_portas} {txt_caixa_status}.\n"
+                texto_acumulado += f"- CAIXA DE DISJUNTORES: de {caixa_mat} {txt_portas} {txt_caixa_status}.\n"
 
         # --- 7. RALO ---
         if eh_sacada or any(x in nome_exibicao.lower() for x in ["cozinha", "banheiro", "serviço", "suíte"]):
