@@ -120,7 +120,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
                 avaria_texto = vid_ava.lower() if q_vidros == 1 else vid_ava.lower() + "s"
                 txt_vidros_estado = f"{q_vidros:02} vidros {avaria_texto}"
 
-            texto_acumulado += f"- JANELA: {jan_mat} {j_status} com {q_trincos} trincos e {q_vidros} vidros em bom estado.\n"
+            texto_acumulado += f"- JANELA: {jan_mat} {j_status} com {q_trincos} trincos e {q_vidros} vidros {v_status.capitalize()}.\n"
 
         # --- ELÉTRICA ---
         incluir_eletrica = st.checkbox("Incluir Elétrica?", value=False, key=f"inc_ele_{id_chave}")
