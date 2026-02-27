@@ -108,11 +108,11 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             
             # Se for 1 vidro, escreve no singular. Se for mais, troca 'novo' por 'novos', etc.
             if q_vidros == 1:
-            txt_vidros_estado = f"01 vidro {v_status}"
+                txt_vidros_estado = f"01 vidro {v_status}"
             else:
-            # Usamos o .replace para colocar o 's' no final das palavras
-            v_status_plural = v_status.replace("novo", "novos").replace("usado", "usados").replace("bom estado", "bons estados")
-            txt_vidros_estado = f"{q_vidros:02} vidros {v_status_plural}"
+                # Usamos o .replace para colocar o 's' no final das palavras
+                v_status_plural = v_status.replace("novo", "novos").replace("usado", "usados").replace("bom estado", "bons estados")
+                txt_vidros_estado = f"{q_vidros:02} vidros {v_status_plural}"
 
             if tem_avaria == "Sim":
             vid_ava = st.selectbox("Avaria:", ["Trincado", "Quebrado", "Faltando"], key=f"vid_ava_sel_{id_chave}")
