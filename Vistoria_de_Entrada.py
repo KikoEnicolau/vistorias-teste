@@ -80,10 +80,10 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             st.markdown("---")
             st.markdown("#### 3. Porta e Batente")
             cp1, cp2, cp3, cp4 = st.columns(4)
-            por_mat = cp1.selectbox("Material", ["Madeira", "Alumínio Preto", "Ferro"], key=f"p_mat_p_s_{id_chave}")
+            por_mat = cp1.selectbox("Material", ["Madeira", "Alumínio", "Ferro"], key=f"p_mat_p_s_{id_chave}")
             por_cor = cp2.selectbox("Cor", OPCOES_CORES, key=f"p_cor_p_s_{id_chave}")
             por_est = cp3.selectbox("Estado", OPCOES_ESTADO, key=f"p_est_p_s_{id_chave}")
-            fec_est = cp4.selectbox("Maçaneta", ["Funcionando", "Com folga", "Sem chave", "Oxidada"], key=f"fec_s_{id_chave}")
+            fec_est = cp4.selectbox("Maçaneta", ["em bom estado"], key=f"fec_s_{id_chave}")
             
             po_status = f"em {por_est.lower()}" if por_est == "Bom estado" else f"com pintura {por_est.lower().replace('novo', 'nova').replace('usado', 'usada')}"
             texto_acumulado += f"- PORTA: {por_mat} na cor {por_cor.lower()}, {po_status}. Maçaneta {fec_est.lower()}.\n"
@@ -94,7 +94,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             st.markdown("---")
             st.markdown("#### 4. Janelas e Vidros")
             cj1, cj2, cj3 = st.columns(3)
-            jan_mat = cj1.selectbox("Material Janela", ["Alumínio Branco", "Alumínio Preto", "Alumínio Natural", "Madeira", "Ferro"], key=f"j_mat_s_{id_chave}")
+            jan_mat = cj1.selectbox("Material Janela", ["Alumínio", "Madeira", "Ferro"], key=f"j_mat_s_{id_chave}")
             jan_est = cj2.selectbox("Estado Janela", OPCOES_ESTADO, key=f"jan_est_s_{id_chave}")
             vid_est_geral = cj3.selectbox("Estado Vidros", OPCOES_ESTADO, key=f"vid_est_s_{id_chave}")
             
@@ -106,12 +106,21 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             j_status = f"em {jan_est.lower()}" if jan_est == "Bom estado" else jan_est.lower()
             v_status = f"em {vid_est_geral.lower()}" if vid_est_geral == "Bom estado" else vid_est_geral.lower()
             
-            txt_vidros_estado = f"Vidros {v_status}"
-            if tem_avaria == "Sim":
-                vid_ava = st.selectbox("Avaria:", ["Trincado", "Quebrado", "Faltando"], key=f"vid_ava_sel_{id_chave}")
-                txt_vidros_estado = f"Vidros {vid_ava.lower()}"
+            # Se for 1 vidro, escreve no singular. Se for mais, troca 'novo' por 'novos', etc.
+            if q_vidros == 1:
+            txt_vidros_estado = f"01 vidro {v_status}"
+            else:
+            # Usamos o .replace para colocar o 's' no final das palavras
+            v_status_plural = v_status.replace("novo", "novos").replace("usado", "usados").replace("bom estado", "bons estados")
+            txt_vidros_estado = f"{q_vidros:02} vidros {v_status_plural}"
 
-            texto_acumulado += f"- JANELA: {jan_mat} {j_status} ({q_vidros:02} vidros e {q_trincos:02} trincos). {txt_vidros_estado}.\n"
+            if tem_avaria == "Sim":
+            vid_ava = st.selectbox("Avaria:", ["Trincado", "Quebrado", "Faltando"], key=f"vid_ava_sel_{id_chave}")
+            # Se for mais de 1 vidro, coloca um 's' na avaria
+            avaria_texto = vid_ava.lower() if q_vidros == 1 else vid_ava.lower() + "s"
+            txt_vidros_estado = f"{q_vidros:02} vidros {avaria_texto}"
+
+            texto_acumulado += f"- JANELA: {jan_mat} {j_status} ({q_trincos:02} trincos). {txt_vidros_estado}.\n"
 
         # --- ELÉTRICA ---
         incluir_eletrica = st.checkbox("Incluir Elétrica?", value=False, key=f"inc_ele_{id_chave}")
