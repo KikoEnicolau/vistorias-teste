@@ -177,11 +177,11 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
                 txt_portas = f"com {caixa_portas:02} porta" if caixa_portas == 1 else f"com {caixa_portas:02} portas"
                 txt_caixa_status = ""
 
-                if caixa_mat == "Ferro":
+                if caixa_mat == "ferro":
                     enferrujada = cd3.radio("Está enferrujada?", ["Não", "Sim"], key=f"caixa_enf_{id_chave}")
                     txt_caixa_status = "em bom estado" if enferrujada == "Não" else "enferrujada"
                 
-                elif caixa_mat == "Madeira":
+                elif caixa_mat == "fadeira":
                     caixa_cor = cd3.selectbox("Cor da Madeira", OPCOES_CORES, key=f"caixa_cor_{id_chave}")
                     caixa_pintura = st.radio("Pintura", ["Nova", "Usada"], key=f"caixa_pint_{id_chave}", horizontal=True)
                     txt_caixa_status = f"na cor {caixa_cor.lower()}, com pintura {caixa_pintura.lower()}"
@@ -190,7 +190,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
                     caixa_est_p = cd3.selectbox("Estado", OPCOES_ESTADO, key=f"caixa_est_p_{id_chave}")
                     txt_caixa_status = f"em {caixa_est_p.lower()}" if caixa_est_p == "Bom estado" else caixa_est_p.lower()
 
-                texto_acumulado += f"- CAIXA DE DISJUNTORES: {caixa_mat} {txt_portas} {txt_caixa_status}.\n"
+                texto_acumulado += f"- Caixa de disjuntores de {caixa_mat} {txt_portas} {txt_caixa_status}.\n"
 
         # --- 7. RALO ---
         if eh_sacada or any(x in nome_exibicao.lower() for x in ["cozinha", "banheiro", "serviço", "suíte"]):
