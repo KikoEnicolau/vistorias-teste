@@ -22,9 +22,11 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
-    titulo = f"📍 {nome_exibicao.upper()}" if not eh_sacada else f"🌅 SACADA DO(A) {nome_exibicao.upper()}"
+    # Ajuste do título para sacada
+    prefixo_titulo = "🌅 SACADA DO(A)" if eh_sacada else "📍"
+    titulo_limpo = f"{prefixo_titulo} {nome_exibicao.upper()}"
     
-    with st.expander(titulo, expanded=True):
+    with st.expander(titulo_limpo, expanded=True):
         texto_acumulado = ""
 
         # --- 1. PISO E RODAPÉ ---
@@ -47,8 +49,8 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
                 if estado == "Bom estado": return "em bom estado"
                 return estado.lower()
 
-            txt_piso = f"- Piso {p_mat} na cor {p_cor.lower()}, {fmt_est_piso(p_est)}."
-            txt_rodape = f" Rodapé {roda_mat} na cor {roda_cor.lower()}, {fmt_est_piso(roda_est)}."
+            txt_piso = f"- PISO: {p_mat} na cor {p_cor.lower()}, {fmt_est_piso(p_est)}."
+            txt_rodape = f" RODAPÉ: {roda_mat} na cor {roda_cor.lower()}, {fmt_est_piso(roda_est)}."
             texto_acumulado += f"{txt_piso}{txt_rodape} {p_obs}\n"
 
         # --- 2. PAREDES E TETO ---
@@ -115,7 +117,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
 
             texto_acumulado += f"- JANELA: {jan_mat} {j_status} com {q_trincos} trincos e {txt_vidros}.\n"
 
-        # --- 5. ILUMINAÇÃO ---
+        # --- 5. ILUMINAÇÃO (IGUAL PARA TODOS) ---
         incluir_ilum = st.checkbox("Incluir Iluminação?", value=False, key=f"inc_ilum_{id_chave}")
         if incluir_ilum:
             st.markdown("---")
@@ -166,31 +168,28 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             e_status = f"em {ele_est.lower()}" if ele_est == "Bom estado" else ele_est.lower()
             texto_acumulado += f"- ELÉTRICA: {q_tom} tomadas e {q_int} interruptores de plástico {e_status}.\n"
 
-            # --- SUB-SEÇÃO: CAIXA DE DISJUNTORES ---
             incluir_caixa = st.checkbox("Incluir Caixa de Disjuntores?", value=False, key=f"inc_caixa_{id_chave}")
             if incluir_caixa:
                 st.write("Detalhes da Caixa de Disjuntores:")
                 cd1, cd2, cd3 = st.columns(3)
-                caixa_mat = cd1.selectbox("Material da Caixa", ["plástico", "ferro", "madeira"], key=f"caixa_mat_{id_chave}")
+                caixa_mat = cd1.selectbox("Material da Caixa", ["Plástico", "Ferro", "Madeira"], key=f"caixa_mat_{id_chave}")
                 caixa_portas = cd2.number_input("Qtd de portas", 1, 10, value=1, key=f"caixa_portas_{id_chave}")
                 
                 txt_portas = f"com {caixa_portas:02} porta" if caixa_portas == 1 else f"com {caixa_portas:02} portas"
                 txt_caixa_status = ""
 
-                if caixa_mat == "ferro":
+                if caixa_mat == "Ferro":
                     enferrujada = cd3.radio("Está enferrujada?", ["Não", "Sim"], key=f"caixa_enf_{id_chave}")
                     txt_caixa_status = "em bom estado" if enferrujada == "Não" else "enferrujada"
-                
-                elif caixa_mat == "madeira":
+                elif caixa_mat == "Madeira":
                     caixa_cor = cd3.selectbox("Cor da Madeira", OPCOES_CORES, key=f"caixa_cor_{id_chave}")
                     caixa_pintura = st.radio("Pintura", ["Nova", "Usada"], key=f"caixa_pint_{id_chave}", horizontal=True)
                     txt_caixa_status = f"na cor {caixa_cor.lower()}, com pintura {caixa_pintura.lower()}"
-                
                 else: # Plástico
                     caixa_est_p = cd3.selectbox("Estado", OPCOES_ESTADO, key=f"caixa_est_p_{id_chave}")
                     txt_caixa_status = f"em {caixa_est_p.lower()}" if caixa_est_p == "Bom estado" else caixa_est_p.lower()
 
-                texto_acumulado += f"- Caixa de disjuntores de {caixa_mat} {txt_portas} {txt_caixa_status}.\n"
+                texto_acumulado += f"- CAIXA DE DISJUNTORES: {caixa_mat} {txt_portas} {txt_caixa_status}.\n"
 
         # --- 7. RALO ---
         if eh_sacada or any(x in nome_exibicao.lower() for x in ["cozinha", "banheiro", "serviço", "suíte"]):
@@ -204,8 +203,8 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
                 ra_status = f"em {r_est.lower()}" if r_est == "Bom estado" else r_est.lower()
                 texto_acumulado += f"- RALO: {r_mat} {ra_status}.\n"
 
-    prefixo = f"### {nome_exibicao.upper()}" if not eh_sacada else f"### SACADA DO(A) {nome_exibicao.upper()}"
-    return f"{prefixo}\n{texto_acumulado}\n"
+    prefixo_relatorio = f"### SACADA DO(A) {nome_exibicao.upper()}" if eh_sacada else f"### {nome_exibicao.upper()}"
+    return f"{prefixo_relatorio}\n{texto_acumulado}\n"
 
 # --- INTERFACE PRINCIPAL ---
 st.title("📋 Vistoria Pro")
