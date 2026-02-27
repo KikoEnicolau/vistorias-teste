@@ -171,7 +171,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             if incluir_caixa:
                 st.write("Detalhes da Caixa de Disjuntores:")
                 cd1, cd2, cd3 = st.columns(3)
-                caixa_mat = cd1.selectbox("Material da Caixa", ["Plástico", "Ferro", "Madeira"], key=f"caixa_mat_{id_chave}")
+                caixa_mat = cd1.selectbox("Material da Caixa", ["plástico", "ferro", "madeira"], key=f"caixa_mat_{id_chave}")
                 caixa_portas = cd2.number_input("Qtd de portas", 1, 10, value=1, key=f"caixa_portas_{id_chave}")
                 
                 txt_portas = f"com {caixa_portas:02} porta" if caixa_portas == 1 else f"com {caixa_portas:02} portas"
