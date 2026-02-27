@@ -115,7 +115,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
 
             texto_acumulado += f"- JANELA: {jan_mat} {j_status} com {q_trincos} trincos e {txt_vidros}.\n"
 
-        # --- 5. ILUMINAÇÃO (REVISADA) ---
+        # --- 5. ILUMINAÇÃO ---
         incluir_ilum = st.checkbox("Incluir Iluminação?", value=False, key=f"inc_ilum_{id_chave}")
         if incluir_ilum:
             st.markdown("---")
@@ -135,7 +135,6 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             q_func = ci7.number_input("Funcionando", 0, 100, value=q_lamps, key=f"q_f_{id_chave}")
             q_queim = ci8.number_input("Queimada", 0, 100, value=0, key=f"q_q_{id_chave}")
 
-            # Montagem Texto Iluminação
             nome_tipo = tipo_ilu.lower() if q_tipo == 1 else f"{tipo_ilu.lower()}s"
             status_estru = est_tipo.lower() if est_tipo != "Bom estado" else "em bom estado"
             txt_base = f"- ILUMINAÇÃO: {q_tipo:02} {nome_tipo} {status_estru}"
@@ -154,7 +153,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
 
             texto_acumulado += f"{txt_base}{txt_l}{txt_v}{txt_f}\n"
 
-        # --- 6. ELÉTRICA ---
+        # --- 6. ELÉTRICA (COM CAIXA DE DISJUNTORES) ---
         incluir_eletrica = st.checkbox("Incluir Elétrica?", value=False, key=f"inc_ele_{id_chave}")
         if incluir_eletrica:
             st.markdown("---")
@@ -163,8 +162,35 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             q_tom = ce1.number_input("Qtd Tomadas", 0, 50, key=f"q_tom_{id_chave}")
             q_int = ce2.number_input("Qtd Interruptores", 0, 50, key=f"q_int_{id_chave}")
             ele_est = ce3.selectbox("Estado Placas", OPCOES_ESTADO, key=f"ele_est_{id_chave}")
+            
             e_status = f"em {ele_est.lower()}" if ele_est == "Bom estado" else ele_est.lower()
             texto_acumulado += f"- ELÉTRICA: {q_tom} tomadas e {q_int} interruptores de plástico {e_status}.\n"
+
+            # --- SUB-SEÇÃO: CAIXA DE DISJUNTORES ---
+            incluir_caixa = st.checkbox("Incluir Caixa de Disjuntores?", value=False, key=f"inc_caixa_{id_chave}")
+            if incluir_caixa:
+                st.write("Detalhes da Caixa de Disjuntores:")
+                cd1, cd2, cd3 = st.columns(3)
+                caixa_mat = cd1.selectbox("Material da Caixa", ["Plástico", "Ferro", "Madeira"], key=f"caixa_mat_{id_chave}")
+                caixa_portas = cd2.number_input("Qtd de portas", 1, 10, value=1, key=f"caixa_portas_{id_chave}")
+                
+                txt_portas = f"com {caixa_portas:02} porta" if caixa_portas == 1 else f"com {caixa_portas:02} portas"
+                txt_caixa_status = ""
+
+                if caixa_mat == "Ferro":
+                    enferrujada = cd3.radio("Está enferrujada?", ["Não", "Sim"], key=f"caixa_enf_{id_chave}")
+                    txt_caixa_status = "em bom estado" if enferrujada == "Não" else "enferrujada"
+                
+                elif caixa_mat == "Madeira":
+                    caixa_cor = cd3.selectbox("Cor da Madeira", OPCOES_CORES, key=f"caixa_cor_{id_chave}")
+                    caixa_pintura = st.radio("Pintura", ["Nova", "Usada"], key=f"caixa_pint_{id_chave}", horizontal=True)
+                    txt_caixa_status = f"na cor {caixa_cor.lower()}, com pintura {caixa_pintura.lower()}"
+                
+                else: # Plástico
+                    caixa_est_p = cd3.selectbox("Estado", OPCOES_ESTADO, key=f"caixa_est_p_{id_chave}")
+                    txt_caixa_status = f"em {caixa_est_p.lower()}" if caixa_est_p == "Bom estado" else caixa_est_p.lower()
+
+                texto_acumulado += f"- CAIXA DE DISJUNTORES: {caixa_mat} {txt_portas} {txt_caixa_status}.\n"
 
         # --- 7. RALO ---
         if eh_sacada or any(x in nome_exibicao.lower() for x in ["cozinha", "banheiro", "serviço", "suíte"]):
