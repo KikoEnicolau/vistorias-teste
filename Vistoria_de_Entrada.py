@@ -111,7 +111,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
                 txt_vidros_estado = f"01 vidro {v_status}"
             else:
                 # Usamos o .replace para colocar o 's' no final das palavras
-                v_status_plural = v_status.replace("novo", "novos").replace("usado", "usados").replace("bom estado", "bons estados")
+                v_status_plural = v_status.replace("novo", "novos").replace("usado", "usados")
                 txt_vidros_estado = f"{q_vidros:02} vidros {v_status_plural}"
 
             if tem_avaria == "Sim":
