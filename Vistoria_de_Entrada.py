@@ -47,8 +47,8 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
                 if estado == "Bom estado": return "em bom estado"
                 return estado.lower()
 
-            txt_piso = f"- PISO: {p_mat} na cor {p_cor.lower()}, {fmt_est_piso(p_est)}."
-            txt_rodape = f" RODAPÉ: {roda_mat} na cor {roda_cor.lower()}, {fmt_est_piso(roda_est)}."
+            txt_piso = f"- Piso {p_mat} na cor {p_cor.lower()}, {fmt_est_piso(p_est)}."
+            txt_rodape = f" Rodapé {roda_mat} na cor {roda_cor.lower()}, {fmt_est_piso(roda_est)}."
             texto_acumulado += f"{txt_piso}{txt_rodape} {p_obs}\n"
 
         # --- 2. PAREDES E TETO ---
