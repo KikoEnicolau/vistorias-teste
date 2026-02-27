@@ -1,7 +1,7 @@
 import streamlit as st
 
 # Configuração da página
-st.set_page_config(page_title="Vistoria Técnica Pro v9", page_icon="🏠", layout="centered")
+st.set_page_config(page_title="Vistoria Técnica Pro v10", page_icon="🏠", layout="centered")
 
 # --- LISTAS DE OPÇÕES ---
 OPCOES_ESTADO = ["em bom estado", "novo", "usado"]
@@ -101,7 +101,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             qv, qt = cj4.number_input("Qtd Vidros", 1, 20, key=f"qv_{id_chave}"), cj5.number_input("Qtd Trincos", 1, 10, key=f"qt_{id_chave}")
             texto_acumulado += f"- Janela de {j_mat} {j_est} com {qt} {plural(qt, 'trinco', 'trincos')} e {qv:02} {plural(qv, 'vidro', 'vidros')} {v_est}.\n"
 
-        # --- 6. ILUMINAÇÃO (AJUSTADO) ---
+        # --- 6. ILUMINAÇÃO ---
         if st.checkbox("Incluir Iluminação?", key=f"inc_ilu_{id_chave}"):
             st.markdown("---")
             st.markdown("#### 5. Iluminação")
@@ -110,14 +110,12 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             q_ilu = c1.number_input("Qtd Itens", 1, 20, key=f"qilu_{id_chave}")
             e_ilu = c2.selectbox("Estado Item", OPCOES_ESTADO, key=f"eilu_{id_chave}")
             q_lamp = c3.number_input("Qtd Lâmpadas", 1, 10, key=f"qlamp_{id_chave}")
-            
             f_lamp = st.radio("Status Lâmpada", ["funcionando", "queimada", "faltante"], key=f"flamp_{id_chave}", horizontal=True)
             
             detalhe = "de vidro " if t_ilu == "plafon" else f"de {st.selectbox('Material Spot', OPCOES_MAT_SPOT, key=f'mspot_{id_chave}')} " if t_ilu == "spot" else ""
-            
             texto_acumulado += f"- {q_ilu:02} {plural(q_ilu, t_ilu, t_ilu+'s')} {detalhe}{e_ilu}, com {q_lamp:02} {plural(q_lamp, 'lâmpada', 'lâmpadas')} {f_lamp}.\n"
 
-        # --- 7. ELÉTRICA (AJUSTADO) ---
+        # --- 7. ELÉTRICA ---
         if st.checkbox("Incluir Elétrica?", key=f"inc_ele_{id_chave}"):
             st.markdown("#### 6. Elétrica")
             c1, c2, c3 = st.columns(3)
@@ -125,7 +123,6 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             
             txt_tom = f"{tom:02} {plural(tom, 'espelho tomada', 'espelhos tomadas')}"
             txt_int = f"{inter:02} {plural(inter, 'interruptor', 'interruptores')}"
-            
             texto_acumulado += f"- {txt_tom} e {txt_int} {ee}.\n"
             
             if st.checkbox("Incluir Quadro de Disjuntores?", key=f"inc_quad_{id_chave}"):
@@ -140,13 +137,14 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
 
     return f"\n{titulo_secao}\n{texto_acumulado}"
 
-# --- APP ---
+# --- APP PRINCIPAL ---
 st.title("📋 Vistoria Profissional")
 q_q, q_s = st.columns(2)
 num_q, num_s = q_q.number_input("Quartos", 0, 10, 1), q_s.number_input("Suítes", 0, 10, 0)
 areas = st.multiselect("Áreas:", ["Sala", "Corredor", "Cozinha", "Banheiro Social", "Área de Serviço"], default=["Sala", "Cozinha"])
 
 relatorio = ""
+# Ordem de geração
 if "Sala" in areas:
     relatorio += formulario_base("sala", "Sala")
     if st.checkbox("A Sala possui sacada?"): relatorio += formulario_base("sac_sala", "Sala", eh_sacada=True)
@@ -165,5 +163,26 @@ if "Área de Serviço" in areas: relatorio += formulario_base("aserv", "Área de
 if relatorio:
     st.header("📄 Relatório Final")
     st.text_area("Texto:", relatorio, height=250)
-    html_format = f"<html><body style='font-family:Times New Roman; font-size:12pt;'>{relatorio.replace(chr(10), '<br>')}</body></html>"
-    st.download_button("📥 Baixar Vistoria", html_format, "vistoria.doc", "application/msword")
+    
+    # --- O SEGREDO PARA OS ACENTOS NO WORD ---
+    html_word = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+            body {{ font-family: 'Times New Roman', serif; font-size: 12pt; color: black; line-height: 1.2; }}
+        </style>
+    </head>
+    <body>
+        {relatorio.replace('\n', '<br>')}
+    </body>
+    </html>
+    """
+    
+    st.download_button(
+        label="📥 Baixar Vistoria para Word",
+        data=html_word,
+        file_name="vistoria_tecnica.doc",
+        mime="application/msword"
+    )
