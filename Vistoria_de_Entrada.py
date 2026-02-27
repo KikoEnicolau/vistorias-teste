@@ -33,12 +33,15 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
     with st.expander(f"📍 {titulo_secao.upper()}", expanded=True):
         texto_acumulado = ""
 
+        # Funções de formatação de texto para o relatório
         def fmt_est_masculino(estado):
             return "em bom estado" if estado == "Bom estado" else estado.lower()
         
         def fmt_est_feminino(estado):
             est = estado.lower().replace("novo", "nova").replace("usado", "usada")
-            return "em bom estado" if "bom" in est else f"pintura {est}"
+            if "bom" in est:
+                return "com pintura em bom estado"
+            return f"com pintura {est}"
 
         # --- 1. PISO E RODAPÉ ---
         incluir_piso = st.checkbox("Incluir Piso/Rodapé?", value=False, key=f"inc_piso_{id_chave}")
@@ -88,7 +91,8 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
                 c_p1, c_p2 = st.columns(2)
                 par_cor = c_p1.selectbox("Cor Pintura", OPCOES_CORES, key=f"par_cor_{id_chave}")
                 par_est = c_p2.selectbox("Estado Pintura", OPCOES_ESTADO, key=f"par_est_{id_chave}")
-                txt_parede_final = f"ALVENARIA: Cor {par_cor.lower()}, {fmt_est_feminino(par_est)}"
+                # Escrita direta sem a palavra ALVENARIA
+                txt_parede_final = f"Cor {par_cor.lower()} {fmt_est_feminino(par_est)}"
             
             elif tipo_parede == "Azulejos (Total)":
                 azu_est = st.selectbox("Estado dos Azulejos", OPCOES_ESTADO, key=f"azu_est_{id_chave}")
@@ -100,9 +104,9 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
                 m_azu_est = m1.selectbox("Estado Azulejo (Baixo)", OPCOES_ESTADO, key=f"m_azu_{id_chave}")
                 m_cor_cima = m2.selectbox("Cor Alvenaria (Cima)", OPCOES_CORES, key=f"m_cor_{id_chave}")
                 m_est_cima = m3.selectbox("Estado Alvenaria (Cima)", OPCOES_ESTADO, key=f"m_est_c_{id_chave}")
-                txt_parede_final = f"Sendo metade de baixo com revestimento de azulejos {fmt_est_masculino(m_azu_est)} e metade de cima em alvenaria na cor {m_cor_cima.lower()}, {fmt_est_feminino(m_est_cima)}"
+                txt_parede_final = f"Sendo metade de baixo com revestimento de azulejos {fmt_est_masculino(m_azu_est)} e metade de cima em alvenaria na cor {m_cor_cima.lower()} {fmt_est_feminino(m_est_cima)}"
 
-            texto_acumulado += f"- PAREDES: {txt_parede_final}. TETO: Cor {tet_cor.lower()}, {fmt_est_feminino(tet_est)}.\n"
+            texto_acumulado += f"- PAREDES: {txt_parede_final}. TETO: Cor {tet_cor.lower()} {fmt_est_feminino(tet_est)}.\n"
 
         # --- 3. PORTAS ---
         incluir_porta = st.checkbox("Incluir Porta/Batente?", value=False, key=f"inc_porta_{id_chave}")
@@ -115,7 +119,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             por_est = cp3.selectbox("Estado", OPCOES_ESTADO, key=f"p_est_p_s_{id_chave}")
             fec_est = cp4.selectbox("Maçaneta", ["Funcionando", "Com folga", "Sem chave", "Oxidada"], key=f"fec_s_{id_chave}")
             
-            texto_acumulado += f"- PORTA: {por_mat} na cor {por_cor.lower()}, {fmt_est_feminino(por_est)}. Maçaneta {fec_est.lower()}.\n"
+            texto_acumulado += f"- PORTA: {por_mat} na cor {por_cor.lower()} {fmt_est_feminino(por_est)}. Maçaneta {fec_est.lower()}.\n"
 
         # --- 4. JANELAS ---
         incluir_janela = st.checkbox("Incluir Janelas?", value=False, key=f"inc_janela_{id_chave}")
