@@ -35,7 +35,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
 
         # Funções de formatação
         def fmt_est_masculino(estado):
-            return "em bom estado" if estado == "Bom estado" else estado.lower()
+            return "em bom estado" if estado == "Bom estado" else f"em estado {estado.lower()}" if estado == "Usado" else estado.lower()
         
         def fmt_est_feminino(estado):
             est = estado.lower().replace("novo", "nova").replace("usado", "usada")
@@ -114,7 +114,7 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             fec_est = cp4.selectbox("Maçaneta", ["Funcionando", "Com folga", "Sem chave", "Oxidada"], key=f"fec_s_{id_chave}")
             texto_acumulado += f"- PORTA: {por_mat} na cor {por_cor.lower()} {fmt_est_feminino(por_est)}. Maçaneta {fec_est.lower()}.\n"
 
-        # --- 4. JANELAS (CORREÇÃO DE PLURAL/SINGULAR) ---
+        # --- 4. JANELAS (CORREÇÃO DE "EM" + PLURAL) ---
         incluir_janela = st.checkbox("Incluir Janelas?", value=False, key=f"inc_janela_{id_chave}")
         if incluir_janela:
             st.markdown("---")
@@ -127,15 +127,17 @@ def formulario_base(id_chave, nome_exibicao, eh_sacada=False):
             q_vidros = cj4.number_input("Qtd Vidros", 0, 20, value=1, key=f"q_vid_{id_chave}")
             q_trincos = cj5.number_input("Qtd Trincos", 0, 10, value=1, key=f"q_tri_{id_chave}")
             
-            # Lógica de Plural/Singular
             txt_trinco = "trinco" if q_trincos == 1 else "trincos"
             txt_vidro_nome = "vidro" if q_vidros == 1 else "vidros"
+            
+            # Formatação do estado da janela com "EM"
+            jan_status_corrigido = fmt_est_masculino(jan_est)
             
             v_status = vid_est_geral.lower() if vid_est_geral != "Bom estado" else "em bom estado"
             if q_vidros > 1:
                 v_status = v_status.replace("novo", "novos").replace("usado", "usados")
             
-            texto_acumulado += f"- JANELA: {jan_mat} {jan_est.lower()} com {q_trincos} {txt_trinco} e {q_vidros:02} {txt_vidro_nome} {v_status}.\n"
+            texto_acumulado += f"- JANELA: {jan_mat} {jan_status_corrigido} com {q_trincos} {txt_trinco} e {q_vidros:02} {txt_vidro_nome} {v_status}.\n"
 
         # --- 5. ILUMINAÇÃO ---
         incluir_ilum = st.checkbox("Incluir Iluminação?", value=False, key=f"inc_ilum_{id_chave}")
