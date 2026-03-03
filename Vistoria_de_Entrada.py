@@ -77,7 +77,6 @@ elif st.session_state.etapa == "detalhamento":
     for i, nome_comodo in enumerate(st.session_state.comodos_lista):
         with abas[i]:
             key_id = f"{nome_comodo}_{i}"
-            
             if key_id not in st.session_state.dados_vistoria:
                 st.session_state.dados_vistoria[key_id] = {}
 
@@ -112,7 +111,6 @@ elif st.session_state.etapa == "detalhamento":
                 tipo_pa = st.selectbox("Tipo de Parede", ["Alvenaria", "Azulejos"], key=f"pa_t_{key_id}")
                 av_pa = st.selectbox("Avarias", OPCOES_AVARIAS, key=f"pa_a_{key_id}")
                 av_pa_txt = f" com {av_pa}" if av_pa != "Não" else ""
-                
                 if tipo_pa == "Azulejos":
                     est_az = st.selectbox("Estado do Azulejo", ["nova", "usada"], key=f"pa_e_az_{key_id}")
                     frase_pa = f"- Paredes com azulejos ate o teto {est_az}{av_pa_txt}"
@@ -147,10 +145,8 @@ elif st.session_state.etapa == "detalhamento":
                     tipo_po = c1.selectbox("Material da Porta", ["madeira", "ferro", "alumínio"], key=f"po_t_{key_id}")
                     cor_po = c2.selectbox("Cor da Porta", CORES_TINTA, key=f"po_c_{key_id}")
                     est_po = c3.selectbox("Estado da Porta", ["novo", "usado", "em bom estado"], key=f"po_e_{key_id}")
-                    
                     fec_po = st.radio("Possui fechadura e maçaneta?", ["sim", "não"], horizontal=True, key=f"po_f_{key_id}")
                     fec_txt = ", com fechadura e maçaneta" if fec_po == "sim" else ""
-
                     tem_vi = st.radio("A porta possui vidros?", ["não", "sim"], horizontal=True, key=f"po_v_c_{key_id}")
                     vi_txt = ""
                     if tem_vi == "sim":
@@ -158,13 +154,11 @@ elif st.session_state.etapa == "detalhamento":
                         qtd_vi = v1.number_input("Qtd Vidros", 1, 20, 1, key=f"po_v_q_{key_id}")
                         est_vi = v2.selectbox("Estado Vidros", ["novo", "usado", "em bom estado"], key=f"po_v_e_{key_id}")
                         av_vi = v3.selectbox("Avarias Vidros", ["Não", "trincado", "quebrado", "faltando"], key=f"po_v_a_{key_id}")
-                        
                         palavra_vidro = "vidro" if qtd_vi == 1 else "vidros"
                         palavra_estado = est_vi if qtd_vi == 1 else est_vi.replace("novo", "novos").replace("usado", "usados")
                         qtd_vi_f = str(qtd_vi).zfill(2)
                         av_vi_txt = f" {av_vi}" if av_vi != "Não" else ""
                         vi_txt = f", {qtd_vi_f} {palavra_vidro} {palavra_estado}{av_vi_txt}"
-
                     tem_ba = st.radio("Possui batente?", ["não", "sim"], horizontal=True, key=f"po_b_c_{key_id}")
                     ba_txt = ""
                     if tem_ba == "sim":
@@ -172,7 +166,6 @@ elif st.session_state.etapa == "detalhamento":
                         tipo_ba = b1.selectbox("Material do Batente", ["madeira", "ferro", "alumínio"], key=f"po_b_t_{key_id}")
                         est_ba = b2.selectbox("Estado do Batente", ["novo", "usado", "em bom estado"], key=f"po_b_e_{key_id}")
                         ba_txt = f", com batente de {tipo_ba} {est_ba}"
-
                     frase_porta = f"- Porta de {tipo_po} na cor {cor_po.lower()} {est_po}{fec_txt}{vi_txt}{ba_txt}"
                     st.session_state.dados_vistoria[key_id]['porta'] = frase_porta
                     st.info(frase_porta)
@@ -195,10 +188,8 @@ elif st.session_state.etapa == "detalhamento":
                 qtd_il = c3.number_input("Quantidade de itens", 1, 50, 1, key=f"il_q_num_{key_id}")
                 est_il = c4.selectbox("Estado do item", ["novo", "usado", "em bom estado"], key=f"il_e_sel_{key_id}")
 
-                # --- NOVA LÓGICA DE LÂMPADAS ---
                 st.write("**Lâmpadas:**")
                 tem_lampada = st.radio("Possui lâmpada?", ["sim", "não"], horizontal=True, key=f"il_l_check_{key_id}")
-                
                 lamp_txt = ""
                 if tem_lampada == "não":
                     lamp_txt = ", sem lâmpada"
@@ -206,7 +197,6 @@ elif st.session_state.etapa == "detalhamento":
                     l1, l2 = st.columns(2)
                     qtd_func = l1.number_input("Qtd Funcionando", 0, 50, 0, key=f"il_l_f_{key_id}")
                     qtd_quei = l2.number_input("Qtd Queimadas", 0, 50, 0, key=f"il_l_q_{key_id}")
-                    
                     partes_lamp = []
                     if qtd_func > 0:
                         p_func = "lâmpada funcionando" if qtd_func == 1 else "lâmpadas funcionando"
@@ -214,13 +204,8 @@ elif st.session_state.etapa == "detalhamento":
                     if qtd_quei > 0:
                         p_quei = "lâmpada queimada" if qtd_quei == 1 else "lâmpadas queimadas"
                         partes_lamp.append(f"{str(qtd_quei).zfill(2)} {p_quei}")
-                    
-                    if partes_lamp:
-                        lamp_txt = ", sendo " + " e ".join(partes_lamp)
-                    else:
-                        lamp_txt = ", com lâmpadas (não testadas)"
+                    lamp_txt = ", sendo " + " e ".join(partes_lamp) if partes_lamp else ", com lâmpadas (não testadas)"
 
-                # Montagem da frase do item
                 nome_item_grafia = tipo_il.lower()
                 if qtd_il > 1:
                     nome_item_grafia = nome_item_grafia.replace("spot", "spots").replace("lustre", "lustres").replace("luminária", "luminárias").replace("lâmpada dicroica", "lâmpadas dicroicas")
@@ -228,24 +213,19 @@ elif st.session_state.etapa == "detalhamento":
                 qtd_f = str(qtd_il).zfill(2)
                 mat_txt = f" de {material_il}" if material_il else ""
                 frase_atual = f"{qtd_f} {nome_item_grafia}{mat_txt} {est_il}{lamp_txt}"
-                
                 st.info(f"Visualização: {frase_atual}")
 
-                # Botão de Adicionar
                 qtd_na_lista = len(st.session_state.dados_vistoria[key_id]['iluminacao_itens'])
                 if st.button("➕ Adicionar este e cadastrar outro tipo", key=f"btn_add_il_{key_id}_{qtd_na_lista}"):
                     st.session_state.dados_vistoria[key_id]['iluminacao_itens'].append(frase_atual)
                     st.rerun()
 
-                # Exibição e Limpeza
                 itens_salvos = st.session_state.dados_vistoria[key_id].get('iluminacao_itens', [])
                 if itens_salvos:
                     st.write("**Itens incluídos:**")
                     for idx, it in enumerate(itens_salvos):
                         st.write(f"{idx+1}. {it}")
-                    
                     st.session_state.dados_vistoria[key_id]['iluminacao'] = "- Iluminação: " + ", ".join(itens_salvos)
-                    
                     if st.button("🗑️ Limpar Iluminação", key=f"il_limp_final_{key_id}"):
                         st.session_state.dados_vistoria[key_id]['iluminacao_itens'] = []
                         st.session_state.dados_vistoria[key_id]['iluminacao'] = ""
@@ -253,23 +233,24 @@ elif st.session_state.etapa == "detalhamento":
                 else:
                     st.session_state.dados_vistoria[key_id]['iluminacao'] = ""
 
-    # --- GERAÇÃO DO TEXTO FINAL PARA DOWNLOAD ---
-    relatorio_final = f"LAUDO DE VISTORIA\nEndereço: {st.session_state.dados_vistoria['info_geral']['endereco']}\n\n"
-    for i, kid in enumerate(st.session_state.comodos_lista):
-        chave_busca = f"{kid}_{i}"
-        if chave_busca in st.session_state.dados_vistoria:
-            dados_comodo = st.session_state.dados_vistoria[chave_busca]
-            relatorio_final += f"[{kid.upper()}]\n"
-            relatorio_final += dados_comodo.get('piso', '') + "\n"
-            if dados_comodo.get('rodape'): relatorio_final += dados_comodo['rodape'] + "\n"
-            relatorio_final += dados_comodo.get('parede', '') + "\n"
-            relatorio_final += dados_comodo.get('teto', '') + "\n"
-            relatorio_final += dados_comodo.get('porta', '') + "\n"
-            if dados_comodo.get('iluminacao'): relatorio_final += dados_comodo['iluminacao'] + "\n"
-            relatorio_final += "\n"
-
+    # --- ÁREA DE DOWNLOAD ---
     st.divider()
-    st.download_button("📥 BAIXAR VISTORIA (.txt)", relatorio_final, file_name=f"Vistoria_{datetime.now().strftime('%Y%m%d')}.txt")
+    def gerar_texto_laudo():
+        info = st.session_state.dados_vistoria.get('info_geral', {'endereco': '', 'inspetor': '', 'data': ''})
+        texto = f"LAUDO DE VISTORIA\nEndereço: {info['endereco']}\nVistoriador: {info['inspetor']}\nData: {info['data']}\n\n"
+        for i, kid in enumerate(st.session_state.comodos_lista):
+            chave_busca = f"{kid}_{i}"
+            if chave_busca in st.session_state.dados_vistoria:
+                dados = st.session_state.dados_vistoria[chave_busca]
+                texto += f"[{kid.upper()}]\n"
+                for campo in ['piso', 'rodape', 'parede', 'teto', 'porta', 'iluminacao']:
+                    if dados.get(campo): texto += f"{dados[campo]}\n"
+                texto += "\n"
+        return texto
+
+    st.download_button("📥 BAIXAR VISTORIA (.txt)", gerar_texto_laudo(), file_name=f"Vistoria_{datetime.now().strftime('%Y%m%d')}.txt")
 
     if st.sidebar.button("⬅️ Reiniciar"):
-        st.session_state.etapa = "identificacao"; st.rerun()
+        st.session_state.etapa = "identificacao"
+        st.session_state.dados_vistoria = {}
+        st.rerun()
