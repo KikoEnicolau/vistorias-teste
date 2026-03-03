@@ -9,10 +9,6 @@ st.markdown("""
         text-align: center; font-size: 1.8rem; font-weight: bold;
         border-radius: 0 0 15px 15px; margin-bottom: 30px;
     }
-    .card {
-        background-color: white; padding: 20px; border-radius: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px;
-    }
     </style>
     <div class="main-header">🏢 Vistoria Master Pro</div>
     """, unsafe_allow_html=True)
@@ -21,7 +17,7 @@ st.markdown("""
 if 'etapa' not in st.session_state: st.session_state.etapa = "identificacao"
 if 'dados_vistoria' not in st.session_state: st.session_state.dados_vistoria = {}
 
-# --- ETAPA 1: IDENTIFICAÇÃO (Resumo do anterior) ---
+# --- ETAPA 1: IDENTIFICAÇÃO ---
 if st.session_state.etapa == "identificacao":
     st.subheader("📍 1. Dados da Unidade")
     tipo_res = st.selectbox("Tipo do Imóvel", ["Casa Térrea", "Sobrado", "Apartamento"])
@@ -36,41 +32,34 @@ if st.session_state.etapa == "identificacao":
             st.session_state.etapa = "composicao"
             st.rerun()
 
-# --- ETAPA 2: COMPOSIÇÃO DO IMÓVEL (O QUE VOCÊ PEDIU AGORA) ---
+# --- ETAPA 2: COMPOSIÇÃO DO IMÓVEL ---
 elif st.session_state.etapa == "composicao":
     st.subheader("🏠 2. Composição do Imóvel")
     
     with st.container():
-        st.write("### Selecione os Ambientes")
+        st.write("### Cômodos Padrão")
         
-        # Itens padrão já marcados (True)
-        col1, col2 = st.columns(2)
-        tem_sala = col1.checkbox("Sala", value=True)
-        tem_cozinha = col1.checkbox("Cozinha", value=True)
-        tem_banheiro_soc = col2.checkbox("Banheiro Social", value=True)
-        tem_lavanderia = col2.checkbox("Lavanderia", value=True)
-        
-        # Outros opcionais comuns
-        tem_sacada = col1.checkbox("Sacada / Varanda")
-        tem_vaga = col2.checkbox("Vaga de Garagem")
+        # Seleção dos itens padrão (Iniciam marcados)
+        c1, c2 = st.columns(2)
+        tem_sala = c1.checkbox("Sala", value=True)
+        tem_cozinha = c1.checkbox("Cozinha", value=True)
+        tem_banheiro_soc = c2.checkbox("Banheiro Social", value=True)
+        tem_lavanderia = c2.checkbox("Lavanderia", value=True)
 
         st.write("---")
         st.write("### Dormitórios e Suítes")
-        c1, c2 = st.columns(2)
-        qtd_dorm = c1.number_input("Quantos Dormitórios (Simples)?", min_value=0, max_value=10, value=1)
-        qtd_suit = c2.number_input("Quantas Suítes (Com Banheiro)?", min_value=0, max_value=10, value=0)
+        col_q, col_s = st.columns(2)
+        qtd_dorm = col_q.number_input("Quantos Dormitórios (Simples)?", min_value=0, max_value=10, value=1)
+        qtd_suit = col_s.number_input("Quantas Suítes (Com Banheiro)?", min_value=0, max_value=10, value=0)
 
-        if st.button("Iniciar Vistoria Detalhada 📝"):
-            # Gerando a lista final de cômodos para a próxima etapa
+        if st.button("Configurar Detalhes da Sala ➡️"):
+            # Gerando a lista final de cômodos
             lista_final = []
             if tem_sala: lista_final.append("Sala")
             if tem_cozinha: lista_final.append("Cozinha")
             if tem_banheiro_soc: lista_final.append("Banheiro Social")
             if tem_lavanderia: lista_final.append("Lavanderia")
-            if tem_sacada: lista_final.append("Sacada / Varanda")
-            if tem_vaga: lista_final.append("Vaga de Garagem")
             
-            # Adicionando os dormitórios dinamicamente
             for i in range(qtd_dorm):
                 lista_final.append(f"Dormitório {i+1}")
             for i in range(qtd_suit):
@@ -78,19 +67,19 @@ elif st.session_state.etapa == "composicao":
                 lista_final.append(f"Banheiro Suíte {i+1}")
             
             st.session_state.dados_vistoria['comodos'] = lista_final
-            st.session_state.etapa = "inspecao_sala" # Indo para o detalhamento da sala
+            st.session_state.etapa = "detalhe_sala" 
             st.rerun()
 
-    if st.sidebar.button("⬅️ Alterar Identificação"):
+    if st.sidebar.button("⬅️ Voltar"):
         st.session_state.etapa = "identificacao"
         st.rerun()
 
 # --- ETAPA 3: ESPAÇO PARA O DETALHAMENTO DA SALA ---
-elif st.session_state.etapa == "inspecao_sala":
-    st.success(f"Configuração Salva: {len(st.session_state.dados_vistoria['comodos'])} ambientes no total.")
-    st.info("Próximo passo: **Detalhamento da Sala**")
+elif st.session_state.etapa == "detalhe_sala":
+    st.info(f"📍 Imóvel: {st.session_state.dados_vistoria['info_geral']['endereco']}")
+    st.subheader("🛋️ Detalhamento: Sala")
     
-    # É AQUI que vou inserir o código da sala que você vai me explicar agora.
+    # Próximo passo: Incluir os campos que você vai me passar abaixo
     st.write("---")
     if st.button("⬅️ Voltar para Composição"):
         st.session_state.etapa = "composicao"
