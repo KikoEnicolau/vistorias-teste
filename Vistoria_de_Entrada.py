@@ -206,7 +206,7 @@ elif st.session_state.etapa == "detalhamento":
                 qtd_il = c3.number_input("Quantidade", 1, 50, 1, key=f"il_q_{key_id}")
                 est_il = c4.selectbox("Estado", ["novo", "usado", "em bom estado"], key=f"il_e_{key_id}")
 
-                if st.button("➕ Adicionar este tipo de iluminação", key=f"il_btn_{key_id}"):
+                if st.button("➕ Adicionar outro", key=f"il_btn_{key_id}"):
                     # Lógica de Singular/Plural
                     nome_item = tipo_il.lower()
                     if qtd_il > 1:
