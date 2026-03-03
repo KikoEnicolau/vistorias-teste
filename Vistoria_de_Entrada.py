@@ -140,7 +140,7 @@ elif st.session_state.etapa == "detalhamento":
                 st.session_state.dados_vistoria[key_id]['teto'] = frase_teto
                 st.info(frase_teto)
 
-    # --- PORTA ---
+            # --- PORTA ---
             with st.expander("🚪 Porta", expanded=False):
                 tem_porta = st.radio("Este cômodo possui porta?", ["não", "sim"], horizontal=True, key=f"po_check_{key_id}")
                 
@@ -153,19 +153,22 @@ elif st.session_state.etapa == "detalhamento":
                     fec_po = st.radio("Possui fechadura e maçaneta?", ["sim", "não"], horizontal=True, key=f"po_f_{key_id}")
                     fec_txt = ", com fechadura e maçaneta" if fec_po == "sim" else ""
 
-                    # VIDROS
+                    # VIDROS (Lógica de Singular/Plural)
                     tem_vi = st.radio("A porta possui vidros?", ["não", "sim"], horizontal=True, key=f"po_v_c_{key_id}")
                     vi_txt = ""
                     if tem_vi == "sim":
                         v1, v2, v3 = st.columns(3)
                         qtd_vi = v1.number_input("Qtd Vidros", 1, 20, 1, key=f"po_v_q_{key_id}")
-                        est_vi = v2.selectbox("Estado Vidros", ["novos", "usados", "em bom estado"], key=f"po_v_e_{key_id}")
+                        est_vi = v2.selectbox("Estado Vidros", ["novo", "usado", "em bom estado"], key=f"po_v_e_{key_id}")
                         av_vi = v3.selectbox("Avarias Vidros", ["Não", "trincado", "quebrado", "faltando"], key=f"po_v_a_{key_id}")
                         
-                        # Formata a quantidade com zero à esquerda (ex: 03)
+                        # Ajuste Singular/Plural
+                        palavra_vidro = "vidro" if qtd_vi == 1 else "vidros"
+                        palavra_estado = est_vi if qtd_vi == 1 else est_vi.replace("novo", "novos").replace("usado", "usados")
+                        
                         qtd_vi_f = str(qtd_vi).zfill(2)
                         av_vi_txt = f" {av_vi}" if av_vi != "Não" else ""
-                        vi_txt = f", {qtd_vi_f} vidros {est_vi}{av_vi_txt}"
+                        vi_txt = f", {qtd_vi_f} {palavra_vidro} {palavra_estado}{av_vi_txt}"
 
                     # BATENTE
                     tem_ba = st.radio("Possui batente?", ["não", "sim"], horizontal=True, key=f"po_b_c_{key_id}")
