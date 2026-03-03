@@ -140,14 +140,15 @@ elif st.session_state.etapa == "detalhamento":
                 st.session_state.dados_vistoria[key_id]['teto'] = frase_teto
                 st.info(frase_teto)
 
-            # --- PORTA ---
+           # --- PORTA ---
             with st.expander("🚪 Porta", expanded=False):
                 tem_porta = st.radio("Este cômodo possui porta?", ["não", "sim"], horizontal=True, key=f"po_check_{key_id}")
                 
                 if tem_porta == "sim":
-                    c1, c2 = st.columns(2)
+                    c1, c2, c3 = st.columns(3)
                     tipo_po = c1.selectbox("Material da Porta", ["madeira", "ferro", "alumínio"], key=f"po_t_{key_id}")
-                    est_po = c2.selectbox("Estado da Porta", ["novo", "usado", "em bom estado"], key=f"po_e_{key_id}")
+                    cor_po = c2.selectbox("Cor da Porta", CORES_TINTA, key=f"po_c_{key_id}")
+                    est_po = c3.selectbox("Estado da Porta", ["novo", "usado", "em bom estado"], key=f"po_e_{key_id}")
                     
                     # FECHADURA
                     fec_po = st.radio("Possui fechadura e maçaneta?", ["sim", "não"], horizontal=True, key=f"po_f_{key_id}")
@@ -179,7 +180,8 @@ elif st.session_state.etapa == "detalhamento":
                         est_ba = b2.selectbox("Estado do Batente", ["novo", "usado", "em bom estado"], key=f"po_b_e_{key_id}")
                         ba_txt = f", com batente de {tipo_ba} {est_ba}"
 
-                    frase_porta = f"- Porta de {tipo_po} {est_po}{fec_txt}{vi_txt}{ba_txt}"
+                    # Escrita Final da Porta com a Cor
+                    frase_porta = f"- Porta de {tipo_po} na cor {cor_po.lower()} {est_po}{fec_txt}{vi_txt}{ba_txt}"
                     st.session_state.dados_vistoria[key_id]['porta'] = frase_porta
                     st.info(frase_porta)
                 else:
