@@ -187,7 +187,7 @@ elif st.session_state.etapa == "detalhamento":
                     nome_formatado = nome_formatado.replace("spot", "spots").replace("lustre", "lustres").replace("luminária", "luminárias").replace("lâmpada dicroica", "lâmpadas dicroicas")
                 
                 mat_txt = f" de {material_il}" if material_il else ""
-                frase_iluminacao = f"- Iluminação: {str(qtd_il).zfill(2)} {nome_formatado}{mat_txt} {est_il}{lamp_txt}"
+                frase_iluminacao = f"- {str(qtd_il).zfill(2)} {nome_formatado}{mat_txt} {est_il}{lamp_txt}"
                 
                 # Salvamento Automático (sem botão)
                 st.session_state.dados_vistoria[key_id]['iluminacao'] = frase_iluminacao
