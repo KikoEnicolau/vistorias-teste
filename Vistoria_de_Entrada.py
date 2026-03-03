@@ -72,15 +72,16 @@ elif st.session_state.etapa == "composicao":
 elif st.session_state.etapa == "detalhamento":
     st.info(f"📍 {st.session_state.dados_vistoria['info_geral']['endereco']}")
     
-    texto_relatorio = f"LAUDO DE VISTORIA\nEndereço: {st.session_state.dados_vistoria['info_geral']['endereco']}\n\n"
-    
     abas = st.tabs(st.session_state.comodos_lista)
 
     for i, nome_comodo in enumerate(st.session_state.comodos_lista):
         with abas[i]:
             key_id = f"{nome_comodo}_{i}"
-            texto_relatorio += f"[{nome_comodo.upper()}]\n"
             
+            # Inicializa o dicionário do cômodo se não existir
+            if key_id not in st.session_state.dados_vistoria:
+                st.session_state.dados_vistoria[key_id] = {}
+
             # --- PISO ---
             with st.expander("🏗️ Piso", expanded=False):
                 c1, c2, c3 = st.columns(3)
@@ -89,8 +90,8 @@ elif st.session_state.etapa == "detalhamento":
                 ap = c3.selectbox("Avarias", OPCOES_AVARIAS, key=f"p_a_{key_id}")
                 av_txt = f" com {ap}" if ap != "Não" else ""
                 frase_piso = f"- Piso {tp} {ep}{av_txt}"
+                st.session_state.dados_vistoria[key_id]['piso'] = frase_piso
                 st.info(frase_piso)
-                texto_relatorio += frase_piso + "\n"
 
             # --- RODAPÉ ---
             with st.expander("📐 Rodapé", expanded=False):
@@ -102,8 +103,10 @@ elif st.session_state.etapa == "detalhamento":
                     av_r = r3.selectbox("Avarias", OPCOES_AVARIAS, key=f"r_a_{key_id}")
                     av_r_txt = f" com {av_r}" if av_r != "Não" else ""
                     frase_rodape = f"- Rodapé em piso {tipo_r} {est_r}{av_r_txt}"
+                    st.session_state.dados_vistoria[key_id]['rodape'] = frase_rodape
                     st.info(frase_rodape)
-                    texto_relatorio += frase_rodape + "\n"
+                else:
+                    st.session_state.dados_vistoria[key_id]['rodape'] = ""
 
             # --- PAREDES ---
             with st.expander("🧱 Paredes", expanded=False):
@@ -119,8 +122,8 @@ elif st.session_state.etapa == "detalhamento":
                     cor_pa = c1.selectbox("Cor da Tinta", CORES_TINTA, key=f"pa_cor_{key_id}")
                     est_pintura = c2.selectbox("Estado da Pintura", ["nova", "usada"], key=f"pa_e_al_{key_id}")
                     frase_pa = f"- Paredes em alvenaria em bom estado, na cor {cor_pa.lower()} com pintura {est_pintura}{av_pa_txt}"
+                st.session_state.dados_vistoria[key_id]['parede'] = frase_pa
                 st.info(frase_pa)
-                texto_relatorio += frase_pa + "\n"
 
             # --- TETO ---
             with st.expander("☁️ Teto", expanded=False):
@@ -128,22 +131,28 @@ elif st.session_state.etapa == "detalhamento":
                 cor_t = c1.selectbox("Cor do Teto", CORES_TINTA, key=f"t_cor_{key_id}")
                 est_t = c2.selectbox("Estado da Pintura", ["nova", "usada"], key=f"t_est_{key_id}")
                 av_t = c3.selectbox("Avarias", OPCOES_AVARIAS, key=f"t_av_{key_id}")
-                
                 tem_gesso = st.radio("Acabamento em gesso?", ["não", "sim"], horizontal=True, key=f"t_gesso_{key_id}")
                 av_t_txt = f" com {av_t}" if av_t != "Não" else ""
                 frase_teto = f"- Teto na cor {cor_t.lower()}, com pintura {est_t}{av_t_txt}"
-                
                 if tem_gesso == "sim":
                     est_g = st.selectbox("Estado do Gesso", ["nova", "usada"], key=f"t_g_est_{key_id}")
                     frase_teto += f", com acabamento em gesso {est_g}"
-                
+                st.session_state.dados_vistoria[key_id]['teto'] = frase_teto
                 st.info(frase_teto)
-                texto_relatorio += frase_teto + "\n"
-            
-            texto_relatorio += "\n"
+
+    # --- GERAÇÃO DO TEXTO FINAL PARA DOWNLOAD ---
+    relatorio_final = f"LAUDO DE VISTORIA\nEndereço: {st.session_state.dados_vistoria['info_geral']['endereco']}\n\n"
+    for kid in st.session_state.comodos_lista:
+        # Encontra a chave correta no dicionário de dados
+        idx = st.session_state.comodos_lista.index(kid)
+        chave_busca = f"{kid}_{idx}"
+        if chave_busca in st.session_state.dados_vistoria:
+            dados_comodo = st.session_state.dados_vistoria[chave_busca]
+            relatorio_final += f"[{kid.upper()}]\n"
+            relatorio_final += dados_comodo.get('piso', '') + "\n"
+            if dados_comodo.get('rodape'): relatorio_final += dados_comodo['rodape'] + "\n"
+            relatorio_final += dados_comodo.get('parede', '') + "\n"
+            relatorio_final += dados_comodo.get('teto', '') + "\n\n"
 
     st.divider()
-    st.download_button("📥 BAIXAR VISTORIA (.txt)", texto_relatorio, file_name=f"Vistoria_{datetime.now().strftime('%Y%m%d')}.txt")
-
-    if st.sidebar.button("⬅️ Reiniciar"):
-        st.session_state.etapa = "identificacao"; st.rerun()
+    st.download_button("📥 BAIXAR VISTORIA (.txt)", relatorio_final, file_name=f"Vistoria_{datetime.now().strftime('%Y%m%d')}.txt")
