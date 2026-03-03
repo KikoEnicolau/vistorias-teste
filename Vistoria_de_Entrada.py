@@ -189,15 +189,14 @@ elif st.session_state.etapa == "detalhamento":
 
             # --- ILUMINAÇÃO ---
             with st.expander("💡 Iluminação", expanded=False):
-                # Inicializa a lista de iluminação no estado do cômodo se não existir
+                # Inicializa a lista se não existir
                 if 'iluminacao_itens' not in st.session_state.dados_vistoria[key_id]:
                     st.session_state.dados_vistoria[key_id]['iluminacao_itens'] = []
 
-                # Form de entrada para novos itens
+                # Interface de seleção
                 c1, c2 = st.columns(2)
                 tipo_il = c1.selectbox("Tipo", ["Spot", "Lustre", "Luminária", "Lâmpada dicroica"], key=f"il_t_{key_id}")
                 
-                # Só mostra material se não for dicroica
                 material_il = ""
                 if tipo_il != "Lâmpada dicroica":
                     material_il = c2.selectbox("Material", ["plástico", "ferro", "vidro"], key=f"il_m_{key_id}")
@@ -206,36 +205,39 @@ elif st.session_state.etapa == "detalhamento":
                 qtd_il = c3.number_input("Quantidade", 1, 50, 1, key=f"il_q_{key_id}")
                 est_il = c4.selectbox("Estado", ["novo", "usado", "em bom estado"], key=f"il_e_{key_id}")
 
-                if st.button("➕ Adicionar outro", key=f"il_btn_{key_id}"):
-                    # Lógica de Singular/Plural
-                    nome_item = tipo_il.lower()
-                    if qtd_il > 1:
-                        if nome_item == "spot": nome_item = "spots"
-                        elif nome_item == "lustre": nome_item = "lustres"
-                        elif nome_item == "luminária": nome_item = "luminárias"
-                        elif nome_item == "lâmpada dicroica": nome_item = "lâmpadas dicroicas"
-                    
-                    qtd_f = str(qtd_il).zfill(2)
-                    mat_txt = f" de {material_il}" if material_il else ""
-                    nova_frase = f"{qtd_f} {nome_item}{mat_txt} {est_il}"
-                    
-                    st.session_state.dados_vistoria[key_id]['iluminacao_itens'].append(nova_frase)
+                # --- LÓGICA DE ESCRITA PARA PRÉ-VISUALIZAÇÃO ---
+                nome_item = tipo_il.lower()
+                if qtd_il > 1:
+                    if nome_item == "spot": nome_item = "spots"
+                    elif nome_item == "lustre": nome_item = "lustres"
+                    elif nome_item == "luminária": nome_item = "luminárias"
+                    elif nome_item == "lâmpada dicroica": nome_item = "lâmpadas dicroicas"
+                
+                qtd_f = str(qtd_il).zfill(2)
+                mat_txt = f" de {material_il}" if material_il else ""
+                frase_atual = f"{qtd_f} {nome_item}{mat_txt} {est_il}"
+                
+                # MOSTRA COMO ESTÁ FICANDO O ITEM ATUAL
+                st.info(f"Visualização do item: {frase_atual}")
 
-                # Exibe e limpa os itens adicionados
+                if st.button("➕ Adicionar este e incluir outro tipo", key=f"il_btn_{key_id}"):
+                    st.session_state.dados_vistoria[key_id]['iluminacao_itens'].append(frase_atual)
+                    st.rerun() # Recarrega para limpar os campos e mostrar na lista abaixo
+
+                # LISTAGEM DOS ITENS JÁ ADICIONADOS
                 itens_salvos = st.session_state.dados_vistoria[key_id].get('iluminacao_itens', [])
                 if itens_salvos:
-                    st.write("---")
+                    st.write("**Itens incluídos neste cômodo:**")
                     for idx, item in enumerate(itens_salvos):
-                        st.write(f"✔️ {item}")
+                        st.write(f"{idx+1}. {item}")
                     
-                    if st.button("🗑️ Limpar Iluminação", key=f"il_limp_{key_id}"):
+                    if st.button("🗑️ Limpar tudo e recomeçar iluminação", key=f"il_limp_{key_id}"):
                         st.session_state.dados_vistoria[key_id]['iluminacao_itens'] = []
                         st.rerun()
 
-                # Monta a frase final para o relatório
+                # SALVAMENTO AUTOMÁTICO PARA O RELATÓRIO
                 if itens_salvos:
-                    frase_final_il = "- Iluminação: " + ", ".join(itens_salvos)
-                    st.session_state.dados_vistoria[key_id]['iluminacao'] = frase_final_il
+                    st.session_state.dados_vistoria[key_id]['iluminacao'] = "- Iluminação: " + ", ".join(itens_salvos)
                 else:
                     st.session_state.dados_vistoria[key_id]['iluminacao'] = ""
 
