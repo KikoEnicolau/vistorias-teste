@@ -4,69 +4,49 @@ from docx.shared import Inches
 import io
 
 # Configuração da Página
-st.set_page_config(page_title="Vistoria Pro v16", page_icon="🏠", layout="centered")
+st.set_page_config(page_title="Vistoria Pro v2026", page_icon="📋", layout="centered")
 
-# --- CSS AVANÇADO (ESTILO DASHBOARD) ---
+# --- CSS DASHBOARD (ESTILO BASE44) ---
 st.markdown("""
     <style>
     .stApp { background-color: #f1f5f9; }
     header {visibility: hidden;}
     .main-header {
-        background-color: #1e293b; padding: 20px; color: white;
-        text-align: center; font-size: 1.6rem; font-weight: bold;
-        border-radius: 0 0 15px 15px; margin-bottom: 25px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        background-color: #1e293b; padding: 15px; color: white;
+        text-align: center; font-size: 1.4rem; font-weight: bold;
+        border-radius: 0 0 12px 12px; margin-bottom: 20px;
     }
-    .stTabs [data-baseweb="tab-list"] { gap: 10px; background: transparent; }
+    .stTabs [data-baseweb="tab-list"] { gap: 5px; }
     .stTabs [data-baseweb="tab"] { 
-        background-color: white; border-radius: 10px; padding: 10px 20px;
-        border: 1px solid #e2e8f0; font-weight: 600;
+        background-color: #e2e8f0; border-radius: 8px 8px 0 0; padding: 8px 15px; font-weight: 600;
     }
-    .stTabs [aria-selected="true"] { 
-        background-color: #2563eb !important; color: white !important; border: none;
-    }
-    div[data-testid="stExpander"] {
-        background-color: white !important; border-radius: 12px !important;
-        border: 1px solid #e2e8f0 !important; margin-bottom: 10px !important;
-    }
+    .stTabs [aria-selected="true"] { background-color: #2563eb !important; color: white !important; }
+    .stCheckbox { margin-bottom: -15px; }
     </style>
-    <div class="main-header">🏠 Vistoria Profissional</div>
+    <div class="main-header">📋 Sistema de Vistoria Profissional</div>
     """, unsafe_allow_html=True)
 
-# --- MEMÓRIA E ESTADOS ---
+# --- MEMÓRIA ---
 if 'etapa' not in st.session_state: st.session_state.etapa = 1
 if 'historico' not in st.session_state: st.session_state.historico = []
 if 'fotos_db' not in st.session_state: st.session_state.fotos_db = {}
 
+# --- FUNÇÕES AUXILIARES ---
 def resetar():
     for key in list(st.session_state.keys()):
         if key not in ['historico']: del st.session_state[key]
     st.session_state.etapa = 1
     st.rerun()
 
-# --- BARRA DE HISTÓRICO ---
-with st.expander("🕒 Minhas Vistorias Recentes"):
-    if not st.session_state.historico: st.info("Nenhuma vistoria salva.")
-    else:
-        for idx, item in enumerate(st.session_state.historico):
-            c1, c2, c3 = st.columns([3, 1, 1])
-            c1.write(f"📍 {item['nome']}")
-            c2.download_button("📥 Baixar", item['data_doc'], f"vistoria_{idx}.docx", key=f"dl_{idx}")
-            if c3.button("🗑️", key=f"del_{idx}"):
-                st.session_state.historico.pop(idx); st.rerun()
-
-if st.session_state.etapa > 1:
-    if st.button("⬅️ Voltar ao Início / Limpar"): resetar()
-
 # --- ETAPA 1: IDENTIFICAÇÃO ---
 if st.session_state.etapa == 1:
-    st.subheader("1. Identificação")
-    with st.container():
-        end = st.text_input("Endereço do Imóvel", placeholder="Rua, Número, Bairro...", key="main_end")
+    st.subheader("📍 Identificação")
+    with st.expander("Dados Gerais", expanded=True):
+        end = st.text_input("Endereço do Imóvel", key="main_end")
         c1, c2 = st.columns(2)
         data_v = c1.date_input("Data da Vistoria")
-        tipo_v = c2.selectbox("Tipo", ["Entrada", "Saída", "Conferência"])
-        if st.button("Próximo Passo ➡️"):
+        tipo_v = c2.selectbox("Tipo", ["Entrada", "Saída", "Transferência"])
+        if st.button("Configurar Cômodos ➡️"):
             if end:
                 st.session_state.info_geral = {"end": end, "data": str(data_v), "tipo": tipo_v}
                 st.session_state.etapa = 2
@@ -74,15 +54,13 @@ if st.session_state.etapa == 1:
 
 # --- ETAPA 2: CÔMODOS ---
 elif st.session_state.etapa == 2:
-    st.subheader("2. Composição do Imóvel")
-    opcoes = ["Sala", "Cozinha", "Banheiro Social", "Área de Serviço", "Corredor", "Varanda/Sacada", "Garagem"]
+    st.subheader("🏠 O que tem no imóvel?")
+    opcoes = ["Sala", "Cozinha", "Banheiro Social", "Área de Serviço", "Corredor", "Varanda", "Garagem"]
     selecionados = [item for item in opcoes if st.checkbox(item, key=f"sel_{item}")]
-    
     c1, c2 = st.columns(2)
-    q = c1.number_input("Quartos (Simples)", 0, 10, 1)
-    s = c2.number_input("Suítes (Com Banheiro)", 0, 10, 0)
-    
-    if st.button("Iniciar Vistoria Detalhada 📝"):
+    q = c1.number_input("Quartos Simples", 0, 10, 1)
+    s = c2.number_input("Suítes", 0, 10, 0)
+    if st.button("Iniciar Inspeção Detalhada 📝"):
         lista = selecionados + [f"Quarto {i+1}" for i in range(q)]
         for i in range(s):
             lista.append(f"Suíte {i+1}"); lista.append(f"Banheiro Suíte {i+1}")
@@ -90,82 +68,107 @@ elif st.session_state.etapa == 2:
         st.session_state.etapa = 3
         st.rerun()
 
-# --- ETAPA 3: PREENCHIMENTO COMPLETO ---
+# --- ETAPA 3: INSPEÇÃO TÉCNICA ---
 elif st.session_state.etapa == 3:
-    st.caption(f"📍 {st.session_state.info_geral['end']}")
+    st.info(f"📍 {st.session_state.info_geral['end']}")
     tabs = st.tabs(st.session_state.comodos)
     
-    ESTADOS = ["Em bom estado", "Novo", "Usado (Marcas de uso)", "Com avarias", "Faltante"]
-    CORES = ["Branca", "Gelo", "Bege", "Cinza", "Off-white", "Preta", "Madeira", "Natural"]
+    # LISTAS TÉCNICAS
+    ESTADOS = ["Bom estado", "Novo", "Usado (Limpo)", "Manchado", "Riscado", "Trincado", "Faltante"]
+    CORES = ["Branca", "Gelo", "Cinza", "Bege", "Madeira", "Preta", "Inox", "Verde", "Azul"]
+    MAT_PISO = ["Porcelanato", "Laminado", "Vinílico", "Cerâmico", "Taco/Madeira", "Ardósia", "Cimento Queimado", "Carpete"]
+    MAT_BANCADA = ["Granito", "Mármore", "Inox", "MDF Revestido", "Quartzo"]
 
     for i, nome_comodo in enumerate(st.session_state.comodos):
         with tabs[i]:
-            kb = f"{nome_comodo}_{i}" # Chave Única
-
-            # 🏗️ PISO E RODAPÉ
-            with st.expander("🏗️ Piso e Rodapé", expanded=True):
-                c1, c2 = st.columns(2)
-                p_mat = c1.selectbox("Material Piso", ["Porcelanato", "Cerâmico", "Laminado", "Vinílico", "Ardósia"], key=f"pm_{kb}")
-                p_cor = c2.selectbox("Cor do Piso", CORES, key=f"pc_{kb}")
-                p_est = st.selectbox("Estado do Piso", ESTADOS, key=f"pe_{kb}")
-                
-                c3, c4 = st.columns(2)
-                r_inc = c3.checkbox("Possui Rodapé?", value=True, key=f"ri_{kb}")
-                r_est = c4.selectbox("Estado Rodapé", ESTADOS, key=f"re_{kb}") if r_inc else "N/A"
-                
-                f_piso = st.file_uploader("📷 Foto Piso/Rodapé", type=['jpg', 'png'], key=f"fp_{kb}")
-                if f_piso: st.session_state.fotos_db[f"fp_{kb}"] = f_piso
-
-            # 🎨 PAREDES E TETO
-            with st.expander("🎨 Paredes e Teto"):
-                c1, c2 = st.columns(2)
-                pa_cor = c1.selectbox("Cor Paredes", CORES, key=f"pac_{kb}")
-                pa_est = c2.selectbox("Estado Paredes", ESTADOS, key=f"pae_{kb}")
-                t_est = st.selectbox("Estado Teto", ESTADOS, key=f"te_{kb}")
-                gesso = st.checkbox("Possui moldura de gesso?", key=f"gs_{kb}")
-                
-                f_par = st.file_uploader("📷 Foto Paredes/Teto", type=['jpg', 'png'], key=f"fpa_{kb}")
-                if f_par: st.session_state.fotos_db[f"fpa_{kb}"] = f_par
-
-            # 🚪 PORTA E JANELA
-            with st.expander("🚪 Portas e Janelas"):
-                st.write("**Detalhes da Porta**")
+            kb = f"{nome_comodo}_{i}"
+            
+            # --- PISO E ACABAMENTOS ---
+            with st.expander("🏗️ Revestimentos (Piso/Parede/Teto)", expanded=True):
+                # Piso
+                st.markdown("**Piso**")
                 c1, c2, c3 = st.columns(3)
-                po_est = c1.selectbox("Folha", ESTADOS, key=f"poe_{kb}")
-                ba_est = c2.selectbox("Batente", ESTADOS, key=f"bae_{kb}")
-                fe_est = c3.selectbox("Maçaneta", ESTADOS, key=f"fee_{kb}")
-                ch_qtd = st.number_input("Qtd Chaves", 0, 5, key=f"chq_{kb}")
+                p_mat = c1.selectbox("Material", MAT_PISO, key=f"pm_{kb}")
+                p_cor = c2.selectbox("Cor", CORES, key=f"pc_{kb}")
+                p_est = c3.selectbox("Estado", ESTADOS, key=f"pe_{kb}")
                 
-                st.write("**Detalhes da Janela**")
-                ja_est = st.selectbox("Estado Janela (Vidros/Trincos)", ESTADOS, key=f"jae_{kb}")
+                # Rodapé
+                if st.checkbox("Tem Rodapé?", value=True, key=f"tr_{kb}"):
+                    c1, c2 = st.columns(2)
+                    r_mat = c1.selectbox("Material Rodapé", ["Mesmo do piso", "Madeira/MDF", "PVC"], key=f"rm_{kb}")
+                    r_est = c2.selectbox("Estado Rodapé", ESTADOS, key=f"re_{kb}")
                 
-                f_ab = st.file_uploader("📷 Foto Aberturas", type=['jpg', 'png'], key=f"fab_{kb}")
-                if f_ab: st.session_state.fotos_db[f"fab_{kb}"] = f_ab
+                # Paredes e Teto
+                st.markdown("---")
+                c1, c2 = st.columns(2)
+                pa_est = c1.selectbox("Pintura Paredes", ESTADOS, key=f"pae_{kb}")
+                te_est = c2.selectbox("Estado Teto", ESTADOS, key=f"tee_{kb}")
+                st.checkbox("Moldura de Gesso?", key=f"m_g_{kb}")
+                
+                f_rev = st.file_uploader("📷 Foto Revestimentos", type=['jpg', 'png'], key=f"f_rev_{kb}")
+                if f_rev: st.session_state.fotos_db[f"f_rev_{kb}"] = f_rev
 
-            # 💡 ELÉTRICA E ILUMINAÇÃO
+            # --- ABERTURAS ---
+            with st.expander("🚪 Aberturas (Porta/Janela)"):
+                st.markdown("**Porta**")
+                c1, c2, c3 = st.columns(3)
+                po_fol = c1.selectbox("Folha", ESTADOS, key=f"poe_{kb}")
+                po_bat = c2.selectbox("Batente", ESTADOS, key=f"pob_{kb}")
+                po_mac = c3.selectbox("Maçaneta", ESTADOS, key=f"pom_{kb}")
+                st.number_input("Qtd Chaves", 0, 5, key=f"ch_{kb}")
+                
+                st.markdown("**Janela**")
+                c1, c2 = st.columns(2)
+                ja_mat = c1.selectbox("Material Janela", ["Alumínio", "Madeira", "PVC", "Ferro", "Blindex"], key=f"jam_{kb}")
+                ja_est = c2.selectbox("Estado Vidros/Trincos", ESTADOS, key=f"jae_{kb}")
+                
+                f_ab = st.file_uploader("📷 Foto Aberturas", type=['jpg', 'png'], key=f"f_ab_{kb}")
+                if f_ab: st.session_state.fotos_db[f_ab_{kb}] = f_ab
+
+            # --- ELÉTRICA ---
             with st.expander("💡 Elétrica e Iluminação"):
                 c1, c2, c3 = st.columns(3)
-                tom_q = c1.number_input("Qtd Tomadas", 0, 30, key=f"tq_{kb}")
-                tom_e = c2.selectbox("Espelhos", ESTADOS, key=f"tep_{kb}")
-                int_q = c3.number_input("Interruptores", 0, 20, key=f"iq_{kb}")
+                tom_q = c1.number_input("Tomadas", 0, 30, key=f"tq_{kb}")
+                int_q = c2.number_input("Interruptores", 0, 20, key=f"iq_{kb}")
+                el_est = c3.selectbox("Estado Espelhos", ESTADOS, key=f"ele_{kb}")
                 
-                st.write("**Luminária**")
-                c4, c5 = st.columns(2)
-                l_tip = c4.selectbox("Tipo", ["Plafon", "Spot LED", "Painel", "Lâmpada Simples"], key=f"lti_{kb}")
-                l_est = c5.radio("Status", ["Funcionando", "Queimada", "Faltante"], key=f"lst_{kb}", horizontal=True)
+                st.markdown("**Iluminação**")
+                c1, c2 = st.columns(2)
+                l_tip = c1.selectbox("Tipo", ["Plafon", "Spot LED", "Lâmpada Simples", "Lustre"], key=f"lti_{kb}")
+                l_sta = c2.radio("Status", ["OK", "Queimada", "Faltante"], key=f"l_st_{kb}", horizontal=True)
                 
-                f_el = st.file_uploader("📷 Foto Elétrica", type=['jpg', 'png'], key=f"fel_{kb}")
-                if f_el: st.session_state.fotos_db[f"fel_{kb}"] = f_el
+                f_el = st.file_uploader("📷 Foto Elétrica", type=['jpg', 'png'], key=f"f_el_{kb}")
+                if f_el: st.session_state.fotos_db[f"f_el_{kb}"] = f_el
 
-            # ⚡ OUTROS (RALO E OBS)
-            with st.expander("➕ Outros"):
-                ralo = st.checkbox("Incluir Ralo?", key=f"ra_{kb}")
-                obs = st.text_area("Observações Adicionais", key=f"ob_{kb}", placeholder="Riscados, manchas, etc...")
+            # --- ÁREAS MOLHADAS / MÓVEIS (Cozinha/Banheiro) ---
+            if "Cozinha" in nome_comodo or "Banheiro" in nome_comodo or "Serviço" in nome_comodo:
+                with st.expander("🚰 Hidráulica e Mobiliário"):
+                    if st.checkbox("Tem Bancada/Pia?", key=f"t_ba_{kb}"):
+                        c1, c2 = st.columns(2)
+                        c1.selectbox("Material Bancada", MAT_BANCADA, key=f"bam_{kb}")
+                        c2.selectbox("Estado Bancada", ESTADOS, key=f"bae_{kb}")
+                    
+                    if st.checkbox("Tem Torneira/Metais?", key=f"t_me_{kb}"):
+                        c1, c2 = st.columns(2)
+                        c1.selectbox("Estado Torneira", ESTADOS, key=f"tme_{kb}")
+                        c2.checkbox("Testado/Funcionando?", key=f"tm_f_{kb}")
+                    
+                    if st.checkbox("Tem Armários?", key=f"t_ar_{kb}"):
+                        st.selectbox("Estado Portas/Gavetas", ESTADOS, key=f"are_{kb}")
+                    
+                    if "Banheiro" in nome_comodo:
+                        st.selectbox("Vaso Sanitário/Assento", ESTADOS, key=f"vse_{kb}")
+                        st.selectbox("Box/Chuveiro", ESTADOS, key=f"bce_{kb}")
 
-    # --- GERAÇÃO DO WORD ---
-    if st.button("🚀 GERAR RELATÓRIO FINAL"):
+                    f_hid = st.file_uploader("📷 Foto Hidráulica/Móveis", type=['jpg', 'png'], key=f"f_hid_{kb}")
+                    if f_hid: st.session_state.fotos_db[f"f_hid_{kb}"] = f_hid
+
+            st.text_area("Notas Adicionais", key=f"obs_{kb}", placeholder="Relate detalhes como vazamentos, manchas de infiltração, etc.")
+
+    # --- GERAÇÃO FINAL ---
+    if st.button("🚀 GERAR RELATÓRIO PROFISSIONAL"):
         doc = Document()
-        doc.add_heading('LAUDO DE VISTORIA IMOBILIÁRIA', 0)
+        doc.add_heading('LAUDO TÉCNICO DE VISTORIA', 0)
         doc.add_paragraph(f"IMÓVEL: {st.session_state.info_geral['end']}")
         doc.add_paragraph(f"DATA: {st.session_state.info_geral['data']} | TIPO: {st.session_state.info_geral['tipo']}")
 
@@ -173,46 +176,42 @@ elif st.session_state.etapa == 3:
             kb = f"{nome}_{i}"
             doc.add_heading(nome.upper(), level=1)
             
-            # Montagem do Texto Descritivo
-            txt = f"Piso {st.session_state.get(f'pm_{kb}')} cor {st.session_state.get(f'pc_{kb}')}, {st.session_state.get(f'pe_{kb}')}. "
-            if st.session_state.get(f'ri_{kb}'):
-                txt += f"Rodapé {st.session_state.get(f're_{kb}')}. "
-            txt += f"Paredes cor {st.session_state.get(f'pac_{kb}')}, {st.session_state.get(f'pae_{kb}')}. "
-            txt += f"Teto {st.session_state.get(f'te_{kb}')}{' com moldura de gesso' if st.session_state.get(f'gs_{kb}') else ''}. "
-            txt += f"Porta {st.session_state.get(f'poe_{kb}')}, batente {st.session_state.get(f'bae_{kb}')}, fechadura {st.session_state.get(f'fee_{kb}')} com {st.session_state.get(f'chq_{kb}')} chave(s). "
-            txt += f"Janela {st.session_state.get(f'jae_{kb}')}. "
-            txt += f"Elétrica com {st.session_state.get(f'tq_{kb}')} tomadas (espelhos {st.session_state.get(f'tep_{kb}')}) e {st.session_state.get(f'iq_{kb}')} interruptores. "
-            txt += f"Iluminação tipo {st.session_state.get(f'lti_{kb}')} {st.session_state.get(f'lst_{kb}')}. "
+            # Texto Técnico Gerado
+            txt = f"Inspeção realizada no cômodo {nome}. "
+            txt += f"Piso em {st.session_state.get(f'pm_{kb}')} na cor {st.session_state.get(f'pc_{kb}')} encontra-se {st.session_state.get(f'pe_{kb}')}. "
             
-            if st.session_state.get(f'ra_{kb}'): txt += "Ralo presente em bom estado. "
+            if st.session_state.get(f'tr_{kb}'):
+                txt += f"Rodapé em {st.session_state.get(f'rm_{kb}')} em {st.session_state.get(f're_{kb}')}. "
             
-            p = doc.add_paragraph(txt)
+            txt += f"Paredes com pintura em {st.session_state.get(f'pae_{kb}')} e teto em {st.session_state.get(f'tee_{kb}')}. "
+            
+            txt += f"Porta: folha {st.session_state.get(f'poe_{kb}')}, batente {st.session_state.get(f'pob_{kb}')} e maçaneta {st.session_state.get(f'pom_{kb}')}. "
+            txt += f"Janela em {st.session_state.get(f'jam_{kb}')} com vidros e trincos em {st.session_state.get(f'jae_{kb}')}. "
+            
+            txt += f"Elétrica composta por {st.session_state.get(f'tq_{kb}')} tomadas e {st.session_state.get(f'iq_{kb}')} interruptores, com espelhos em {st.session_state.get(f'ele_{kb}')}. "
+            txt += f"Iluminação {st.session_state.get(f'lti_{kb}')} está {st.session_state.get(f'l_st_{kb}')}. "
+            
+            if st.session_state.get(f't_ba_{kb}'):
+                txt += f"Bancada em {st.session_state.get(f'bam_{kb}')} em {st.session_state.get(f'bae_{kb}')}. "
+            
+            doc.add_paragraph(txt)
             if st.session_state.get(f'ob_{kb}'):
-                doc.add_paragraph(f"OBSERVAÇÕES: {st.session_state.get(f'ob_{kb}')}")
+                doc.add_paragraph(f"OBS: {st.session_state.get(f'ob_{kb}')}")
 
-            # Organização das Fotos 2x2
+            # FOTOS 2x2
             fotos_locais = []
-            for f_key in [f"fp_{kb}", f"fpa_{kb}", f"fab_{kb}", f"fel_{kb}"]:
+            for f_key in [f"f_rev_{kb}", f"f_ab_{kb}", f"f_el_{kb}", f"f_hid_{kb}"]:
                 if f_key in st.session_state.fotos_db:
                     fotos_locais.append(st.session_state.fotos_db[f_key])
 
             if fotos_locais:
-                doc.add_paragraph("\nREGISTROS FOTOGRÁFICOS:")
-                for j in range(0, len(fotos_locais), 2):
-                    table = doc.add_table(rows=1, cols=2)
-                    for idx, photo in enumerate(fotos_locais[j:j+2]):
-                        img_stream = io.BytesIO(photo.getvalue())
-                        cell = table.rows[0].cells[idx]
-                        run = cell.paragraphs[0].add_run()
-                        run.add_picture(img_stream, width=Inches(3.0))
+                table = doc.add_table(rows=(len(fotos_locais)+1)//2, cols=2)
+                for idx, photo in enumerate(fotos_locais):
+                    img_stream = io.BytesIO(photo.getvalue())
+                    cell = table.rows[idx // 2].cells[idx % 2]
+                    run = cell.paragraphs[0].add_run()
+                    run.add_picture(img_stream, width=Inches(3.0))
 
         target = io.BytesIO()
         doc.save(target)
-        doc_bytes = target.getvalue()
-
-        # Salva no Histórico
-        st.session_state.historico.insert(0, {"nome": st.session_state.info_geral['end'], "data_doc": doc_bytes})
-        if len(st.session_state.historico) > 2: st.session_state.historico.pop()
-        
-        st.success("✅ Vistoria finalizada com sucesso!")
-        st.download_button("📥 BAIXAR RELATÓRIO WORD", doc_bytes, f"vistoria_{st.session_state.info_geral['end']}.docx")
+        st.download_button("📥 BAIXAR LAUDO FINALIZADO", target.getvalue(), "vistoria_pro.docx")
