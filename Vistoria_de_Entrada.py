@@ -215,40 +215,57 @@ elif st.session_state.etapa == "detalhamento":
                 frase_atual = f"{qtd_f} {nome_item_grafia}{mat_txt} {est_il}{lamp_txt}"
                 st.info(f"Visualização: {frase_atual}")
 
-                qtd_na_lista = len(st.session_state.dados_vistoria[key_id]['iluminacao_itens'])
-                if st.button("➕ Adicionar este e cadastrar outro tipo", key=f"btn_add_il_{key_id}_{qtd_na_lista}"):
+                # ADICIONA À LISTA
+                if st.button("➕ Adicionar este e cadastrar outro tipo", key=f"btn_add_il_{key_id}_{len(st.session_state.dados_vistoria[key_id]['iluminacao_itens'])}"):
                     st.session_state.dados_vistoria[key_id]['iluminacao_itens'].append(frase_atual)
+                    # Atualiza a frase final de iluminação IMEDIATAMENTE após adicionar
+                    st.session_state.dados_vistoria[key_id]['iluminacao'] = "- Iluminação: " + ", ".join(st.session_state.dados_vistoria[key_id]['iluminacao_itens'])
                     st.rerun()
 
+                # EXIBIÇÃO E LIMPEZA
                 itens_salvos = st.session_state.dados_vistoria[key_id].get('iluminacao_itens', [])
                 if itens_salvos:
                     st.write("**Itens incluídos:**")
                     for idx, it in enumerate(itens_salvos):
                         st.write(f"{idx+1}. {it}")
-                    st.session_state.dados_vistoria[key_id]['iluminacao'] = "- Iluminação: " + ", ".join(itens_salvos)
+                    
                     if st.button("🗑️ Limpar Iluminação", key=f"il_limp_final_{key_id}"):
                         st.session_state.dados_vistoria[key_id]['iluminacao_itens'] = []
                         st.session_state.dados_vistoria[key_id]['iluminacao'] = ""
                         st.rerun()
-                else:
-                    st.session_state.dados_vistoria[key_id]['iluminacao'] = ""
 
     # --- ÁREA DE DOWNLOAD ---
     st.divider()
-    def gerar_texto_laudo():
+
+    # Função interna para montar o texto garantindo que pega o session_state atualizado
+    def montar_relatorio():
         info = st.session_state.dados_vistoria.get('info_geral', {'endereco': '', 'inspetor': '', 'data': ''})
-        texto = f"LAUDO DE VISTORIA\nEndereço: {info['endereco']}\nVistoriador: {info['inspetor']}\nData: {info['data']}\n\n"
+        texto = f"LAUDO DE VISTORIA\n"
+        texto += f"Endereço: {info['endereco']}\n"
+        texto += f"Vistoriador: {info['inspetor']}\n"
+        texto += f"Data: {info['data']}\n\n"
+        
         for i, kid in enumerate(st.session_state.comodos_lista):
             chave_busca = f"{kid}_{i}"
             if chave_busca in st.session_state.dados_vistoria:
                 dados = st.session_state.dados_vistoria[chave_busca]
                 texto += f"[{kid.upper()}]\n"
+                
+                # Campos a serem verificados
                 for campo in ['piso', 'rodape', 'parede', 'teto', 'porta', 'iluminacao']:
-                    if dados.get(campo): texto += f"{dados[campo]}\n"
+                    valor = dados.get(campo)
+                    if valor and valor.strip() != "":
+                        texto += f"{valor}\n"
                 texto += "\n"
         return texto
 
-    st.download_button("📥 BAIXAR VISTORIA (.txt)", gerar_texto_laudo(), file_name=f"Vistoria_{datetime.now().strftime('%Y%m%d')}.txt")
+    # Botão de download chamando a função de montagem
+    st.download_button(
+        label="📥 BAIXAR VISTORIA (.txt)",
+        data=montar_relatorio(),
+        file_name=f"Vistoria_{datetime.now().strftime('%Y%m%d_%H%M')}.txt",
+        mime="text/plain"
+    )
 
     if st.sidebar.button("⬅️ Reiniciar"):
         st.session_state.etapa = "identificacao"
