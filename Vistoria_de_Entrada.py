@@ -140,6 +140,48 @@ elif st.session_state.etapa == "detalhamento":
                 st.session_state.dados_vistoria[key_id]['teto'] = frase_teto
                 st.info(frase_teto)
 
+    # --- PORTA ---
+            with st.expander("🚪 Porta", expanded=False):
+                tem_porta = st.radio("Este cômodo possui porta?", ["não", "sim"], horizontal=True, key=f"po_check_{key_id}")
+                
+                if tem_porta == "sim":
+                    c1, c2 = st.columns(2)
+                    tipo_po = c1.selectbox("Material da Porta", ["madeira", "ferro", "alumínio"], key=f"po_t_{key_id}")
+                    est_po = c2.selectbox("Estado da Porta", ["novo", "usado", "em bom estado"], key=f"po_e_{key_id}")
+                    
+                    # FECHADURA
+                    fec_po = st.radio("Possui fechadura e maçaneta?", ["sim", "não"], horizontal=True, key=f"po_f_{key_id}")
+                    fec_txt = ", com fechadura e maçaneta" if fec_po == "sim" else ""
+
+                    # VIDROS
+                    tem_vi = st.radio("A porta possui vidros?", ["não", "sim"], horizontal=True, key=f"po_v_c_{key_id}")
+                    vi_txt = ""
+                    if tem_vi == "sim":
+                        v1, v2, v3 = st.columns(3)
+                        qtd_vi = v1.number_input("Qtd Vidros", 1, 20, 1, key=f"po_v_q_{key_id}")
+                        est_vi = v2.selectbox("Estado Vidros", ["novos", "usados", "em bom estado"], key=f"po_v_e_{key_id}")
+                        av_vi = v3.selectbox("Avarias Vidros", ["Não", "trincado", "quebrado", "faltando"], key=f"po_v_a_{key_id}")
+                        
+                        # Formata a quantidade com zero à esquerda (ex: 03)
+                        qtd_vi_f = str(qtd_vi).zfill(2)
+                        av_vi_txt = f" {av_vi}" if av_vi != "Não" else ""
+                        vi_txt = f", {qtd_vi_f} vidros {est_vi}{av_vi_txt}"
+
+                    # BATENTE
+                    tem_ba = st.radio("Possui batente?", ["não", "sim"], horizontal=True, key=f"po_b_c_{key_id}")
+                    ba_txt = ""
+                    if tem_ba == "sim":
+                        b1, b2 = st.columns(2)
+                        tipo_ba = b1.selectbox("Material do Batente", ["madeira", "ferro", "alumínio"], key=f"po_b_t_{key_id}")
+                        est_ba = b2.selectbox("Estado do Batente", ["novo", "usado", "em bom estado"], key=f"po_b_e_{key_id}")
+                        ba_txt = f", com batente de {tipo_ba} {est_ba}"
+
+                    frase_porta = f"- Porta de {tipo_po} {est_po}{fec_txt}{vi_txt}{ba_txt}"
+                    st.session_state.dados_vistoria[key_id]['porta'] = frase_porta
+                    st.info(frase_porta)
+                else:
+                    st.session_state.dados_vistoria[key_id]['porta'] = ""
+
     # --- GERAÇÃO DO TEXTO FINAL PARA DOWNLOAD ---
     relatorio_final = f"LAUDO DE VISTORIA\nEndereço: {st.session_state.dados_vistoria['info_geral']['endereco']}\n\n"
     for kid in st.session_state.comodos_lista:
@@ -153,6 +195,7 @@ elif st.session_state.etapa == "detalhamento":
             if dados_comodo.get('rodape'): relatorio_final += dados_comodo['rodape'] + "\n"
             relatorio_final += dados_comodo.get('parede', '') + "\n"
             relatorio_final += dados_comodo.get('teto', '') + "\n\n"
+            relatorio_final += dados_comodo.get('porta', '') + "\n"
 
     st.divider()
     st.download_button("📥 BAIXAR VISTORIA (.txt)", relatorio_final, file_name=f"Vistoria_{datetime.now().strftime('%Y%m%d')}.txt")
