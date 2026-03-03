@@ -187,26 +187,30 @@ elif st.session_state.etapa == "detalhamento":
                 else:
                     st.session_state.dados_vistoria[key_id]['porta'] = ""
 
-# --- ILUMINAÇÃO ---
+            # --- ILUMINAÇÃO ---
             with st.expander("💡 Iluminação", expanded=False):
-                # Inicializa a lista se não existir no estado do cômodo
+                # Inicializa a lista se não existir
                 if 'iluminacao_itens' not in st.session_state.dados_vistoria[key_id]:
                     st.session_state.dados_vistoria[key_id]['iluminacao_itens'] = []
 
-                # Interface de seleção (Sempre visível para permitir múltiplos cadastros)
+                # Interface de seleção
                 st.write("---")
                 c1, c2 = st.columns(2)
-                tipo_il = c1.selectbox("Tipo", ["Spot", "Lustre", "Luminária", "Lâmpada dicroica"], key=f"il_t_{key_id}")
+                tipo_il = c1.selectbox("Tipo", ["Spot", "Lustre", "Luminária", "Lâmpada dicroica"], key=f"il_t_sel_{key_id}")
                 
                 material_il = ""
                 if tipo_il != "Lâmpada dicroica":
-                    material_il = c2.selectbox("Material", ["plástico", "ferro", "vidro"], key=f"il_m_{key_id}")
+                    material_il = c2.selectbox("Material", ["plástico", "ferro", "vidro"], key=f"il_m_sel_{key_id}")
                 
                 c3, c4 = st.columns(2)
-                qtd_il = c3.number_input("Quantidade", 1, 50, 1, key=f"il_q_{key_id}")
-                est_il = c4.selectbox("Estado", ["novo", "usado", "em bom estado"], key=f"il_e_{key_id}")
+                qtd_il = c3.number_input("Quantidade", 1, 50, 1, key=f"il_q_num_{key_id}")
+                est_il = c4.selectbox("Estado", ["novo", "usado", "em bom estado"], key=f"il_e_sel_{key_id}")
 
-                if st.button("➕ Adicionar este e cadastrar outro", key=f"il_btn_{key_id}"):
+                # Geramos uma key dinâmica para o botão baseada no tamanho da lista atual
+                qtd_itens_na_lista = len(st.session_state.dados_vistoria[key_id]['iluminacao_itens'])
+                btn_key = f"btn_add_ilum_{key_id}_{qtd_itens_na_lista}"
+
+                if st.button("➕ Adicionar este e cadastrar outro", key=btn_key):
                     # Lógica de Singular/Plural
                     nome_item = tipo_il.lower()
                     if qtd_il > 1:
@@ -219,11 +223,10 @@ elif st.session_state.etapa == "detalhamento":
                     mat_txt = f" de {material_il}" if material_il else ""
                     nova_frase_item = f"{qtd_f} {nome_item}{mat_txt} {est_il}"
                     
-                    # Adiciona à lista
                     st.session_state.dados_vistoria[key_id]['iluminacao_itens'].append(nova_frase_item)
                     st.rerun()
 
-                # --- EXIBIÇÃO DA ESCRITA FINAL (O QUE VAI PARA O RELATÓRIO) ---
+                # --- EXIBIÇÃO DA ESCRITA FINAL ---
                 itens_salvos = st.session_state.dados_vistoria[key_id].get('iluminacao_itens', [])
                 if itens_salvos:
                     frase_completa_il = "- Iluminação: " + ", ".join(itens_salvos)
@@ -231,9 +234,9 @@ elif st.session_state.etapa == "detalhamento":
                     
                     st.write("---")
                     st.write("**Escrita atual para o relatório:**")
-                    st.info(frase_completa_il) # Aqui você vê tudo o que já adicionou
+                    st.info(frase_completa_il)
                     
-                    if st.button("🗑️ Limpar Tudo", key=f"il_limp_{key_id}"):
+                    if st.button("🗑️ Limpar Tudo", key=f"il_limp_btn_{key_id}"):
                         st.session_state.dados_vistoria[key_id]['iluminacao_itens'] = []
                         st.session_state.dados_vistoria[key_id]['iluminacao'] = ""
                         st.rerun()
