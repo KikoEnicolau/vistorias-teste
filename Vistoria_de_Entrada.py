@@ -118,7 +118,7 @@ elif st.session_state.etapa == "detalhamento":
                     c1, c2 = st.columns(2)
                     cor_pa = c1.selectbox("Cor da Tinta", CORES_TINTA, key=f"pa_cor_{key_id}")
                     est_pintura = c2.selectbox("Estado da Pintura", ["nova", "usada"], key=f"pa_e_al_{key_id}")
-                    frase_pa = f"- Paredes em alvenaria em bom estado, na cor {cor_pa.lower()} com pintura {est_pintura}{av_pa_txt}"
+                    frase_pa = f"- Paredes em alvenaria em bom estado, na cor {cor_pa.lower()} with pintura {est_pintura}{av_pa_txt}"
                 st.session_state.dados_vistoria[key_id]['parede'] = frase_pa
                 st.info(frase_pa)
 
@@ -147,123 +147,74 @@ elif st.session_state.etapa == "detalhamento":
                     est_po = c3.selectbox("Estado da Porta", ["novo", "usado", "em bom estado"], key=f"po_e_{key_id}")
                     fec_po = st.radio("Possui fechadura e maçaneta?", ["sim", "não"], horizontal=True, key=f"po_f_{key_id}")
                     fec_txt = ", com fechadura e maçaneta" if fec_po == "sim" else ""
-                    tem_vi = st.radio("A porta possui vidros?", ["não", "sim"], horizontal=True, key=f"po_v_c_{key_id}")
-                    vi_txt = ""
-                    if tem_vi == "sim":
-                        v1, v2, v3 = st.columns(3)
-                        qtd_vi = v1.number_input("Qtd Vidros", 1, 20, 1, key=f"po_v_q_{key_id}")
-                        est_vi = v2.selectbox("Estado Vidros", ["novo", "usado", "em bom estado"], key=f"po_v_e_{key_id}")
-                        av_vi = v3.selectbox("Avarias Vidros", ["Não", "trincado", "quebrado", "faltando"], key=f"po_v_a_{key_id}")
-                        palavra_vidro = "vidro" if qtd_vi == 1 else "vidros"
-                        palavra_estado = est_vi if qtd_vi == 1 else est_vi.replace("novo", "novos").replace("usado", "usados")
-                        qtd_vi_f = str(qtd_vi).zfill(2)
-                        av_vi_txt = f" {av_vi}" if av_vi != "Não" else ""
-                        vi_txt = f", {qtd_vi_f} {palavra_vidro} {palavra_estado}{av_vi_txt}"
-                    tem_ba = st.radio("Possui batente?", ["não", "sim"], horizontal=True, key=f"po_b_c_{key_id}")
-                    ba_txt = ""
-                    if tem_ba == "sim":
-                        b1, b2 = st.columns(2)
-                        tipo_ba = b1.selectbox("Material do Batente", ["madeira", "ferro", "alumínio"], key=f"po_b_t_{key_id}")
-                        est_ba = b2.selectbox("Estado do Batente", ["novo", "usado", "em bom estado"], key=f"po_b_e_{key_id}")
-                        ba_txt = f", com batente de {tipo_ba} {est_ba}"
-                    frase_porta = f"- Porta de {tipo_po} na cor {cor_po.lower()} {est_po}{fec_txt}{vi_txt}{ba_txt}"
+                    frase_porta = f"- Porta de {tipo_po} na cor {cor_po.lower()} {est_po}{fec_txt}"
                     st.session_state.dados_vistoria[key_id]['porta'] = frase_porta
                     st.info(frase_porta)
                 else:
                     st.session_state.dados_vistoria[key_id]['porta'] = ""
 
-            # --- ILUMINAÇÃO ---
+            # --- ILUMINAÇÃO (SISTEMA DIRETO) ---
             with st.expander("💡 Iluminação", expanded=False):
-                if 'iluminacao_itens' not in st.session_state.dados_vistoria[key_id]:
-                    st.session_state.dados_vistoria[key_id]['iluminacao_itens'] = []
-
-                st.write("---")
                 c1, c2 = st.columns(2)
-                tipo_il = c1.selectbox("Tipo", ["Spot", "Lustre", "Luminária", "Lâmpada dicroica"], key=f"il_t_sel_{key_id}")
+                tipo_il = c1.selectbox("Tipo", ["Spot", "Lustre", "Luminária", "Lâmpada dicroica"], key=f"il_t_{key_id}")
                 material_il = ""
                 if tipo_il != "Lâmpada dicroica":
-                    material_il = c2.selectbox("Material", ["plástico", "ferro", "vidro"], key=f"il_m_sel_{key_id}")
+                    material_il = c2.selectbox("Material", ["plástico", "ferro", "vidro"], key=f"il_m_{key_id}")
                 
                 c3, c4 = st.columns(2)
-                qtd_il = c3.number_input("Quantidade de itens", 1, 50, 1, key=f"il_q_num_{key_id}")
-                est_il = c4.selectbox("Estado do item", ["novo", "usado", "em bom estado"], key=f"il_e_sel_{key_id}")
+                qtd_il = c3.number_input("Quantidade de itens", 1, 50, 1, key=f"il_q_{key_id}")
+                est_il = c4.selectbox("Estado do item", OPCOES_ESTADO, key=f"il_e_{key_id}")
 
                 st.write("**Lâmpadas:**")
-                tem_lampada = st.radio("Possui lâmpada?", ["sim", "não"], horizontal=True, key=f"il_l_check_{key_id}")
+                tem_lampada = st.radio("Possui lâmpada?", ["sim", "não"], horizontal=True, key=f"il_l_c_{key_id}")
+                
                 lamp_txt = ""
                 if tem_lampada == "não":
                     lamp_txt = ", sem lâmpada"
                 else:
                     l1, l2 = st.columns(2)
-                    qtd_func = l1.number_input("Qtd Funcionando", 0, 50, 0, key=f"il_l_f_{key_id}")
-                    qtd_quei = l2.number_input("Qtd Queimadas", 0, 50, 0, key=f"il_l_q_{key_id}")
-                    partes_lamp = []
-                    if qtd_func > 0:
-                        p_func = "lâmpada funcionando" if qtd_func == 1 else "lâmpadas funcionando"
-                        partes_lamp.append(f"{str(qtd_func).zfill(2)} {p_func}")
-                    if qtd_quei > 0:
-                        p_quei = "lâmpada queimada" if qtd_quei == 1 else "lâmpadas queimadas"
-                        partes_lamp.append(f"{str(qtd_quei).zfill(2)} {p_quei}")
-                    lamp_txt = ", sendo " + " e ".join(partes_lamp) if partes_lamp else ", com lâmpadas (não testadas)"
-
-                nome_item_grafia = tipo_il.lower()
-                if qtd_il > 1:
-                    nome_item_grafia = nome_item_grafia.replace("spot", "spots").replace("lustre", "lustres").replace("luminária", "luminárias").replace("lâmpada dicroica", "lâmpadas dicroicas")
-                
-                qtd_f = str(qtd_il).zfill(2)
-                mat_txt = f" de {material_il}" if material_il else ""
-                frase_atual = f"{qtd_f} {nome_item_grafia}{mat_txt} {est_il}{lamp_txt}"
-                st.info(f"Visualização: {frase_atual}")
-
-                # ADICIONA À LISTA
-                if st.button("➕ Adicionar este e cadastrar outro tipo", key=f"btn_add_il_{key_id}_{len(st.session_state.dados_vistoria[key_id]['iluminacao_itens'])}"):
-                    st.session_state.dados_vistoria[key_id]['iluminacao_itens'].append(frase_atual)
-                    # Atualiza a frase final de iluminação IMEDIATAMENTE após adicionar
-                    st.session_state.dados_vistoria[key_id]['iluminacao'] = "- Iluminação: " + ", ".join(st.session_state.dados_vistoria[key_id]['iluminacao_itens'])
-                    st.rerun()
-
-                # EXIBIÇÃO E LIMPEZA
-                itens_salvos = st.session_state.dados_vistoria[key_id].get('iluminacao_itens', [])
-                if itens_salvos:
-                    st.write("**Itens incluídos:**")
-                    for idx, it in enumerate(itens_salvos):
-                        st.write(f"{idx+1}. {it}")
+                    qtd_f = l1.number_input("Qtd Funcionando", 0, 50, 0, key=f"il_l_f_{key_id}")
+                    qtd_q = l2.number_input("Qtd Queimadas", 0, 50, 0, key=f"il_l_q_{key_id}")
                     
-                    if st.button("🗑️ Limpar Iluminação", key=f"il_limp_final_{key_id}"):
-                        st.session_state.dados_vistoria[key_id]['iluminacao_itens'] = []
-                        st.session_state.dados_vistoria[key_id]['iluminacao'] = ""
-                        st.rerun()
+                    partes = []
+                    if qtd_f > 0: partes.append(f"{str(qtd_f).zfill(2)} {'lâmpada funcionando' if qtd_f == 1 else 'lâmpadas funcionando'}")
+                    if qtd_q > 0: partes.append(f"{str(qtd_q).zfill(2)} {'lâmpada queimada' if qtd_q == 1 else 'lâmpadas queimadas'}")
+                    lamp_txt = ", sendo " + " e ".join(partes) if partes else ", com lâmpadas (não testadas)"
+
+                # Formatação Singular/Plural
+                nome_formatado = tipo_il.lower()
+                if qtd_il > 1:
+                    nome_formatado = nome_formatado.replace("spot", "spots").replace("lustre", "lustres").replace("luminária", "luminárias").replace("lâmpada dicroica", "lâmpadas dicroicas")
+                
+                mat_txt = f" de {material_il}" if material_il else ""
+                frase_iluminacao = f"- Iluminação: {str(qtd_il).zfill(2)} {nome_formatado}{mat_txt} {est_il}{lamp_txt}"
+                
+                # Salvamento Automático (sem botão)
+                st.session_state.dados_vistoria[key_id]['iluminacao'] = frase_iluminacao
+                st.info(frase_iluminacao)
 
     # --- ÁREA DE DOWNLOAD ---
     st.divider()
 
-    # Função interna para montar o texto garantindo que pega o session_state atualizado
     def montar_relatorio():
         info = st.session_state.dados_vistoria.get('info_geral', {'endereco': '', 'inspetor': '', 'data': ''})
-        texto = f"LAUDO DE VISTORIA\n"
-        texto += f"Endereço: {info['endereco']}\n"
-        texto += f"Vistoriador: {info['inspetor']}\n"
-        texto += f"Data: {info['data']}\n\n"
+        texto = f"LAUDO DE VISTORIA\nEndereço: {info['endereco']}\nVistoriador: {info['inspetor']}\nData: {info['data']}\n\n"
         
         for i, kid in enumerate(st.session_state.comodos_lista):
             chave_busca = f"{kid}_{i}"
             if chave_busca in st.session_state.dados_vistoria:
                 dados = st.session_state.dados_vistoria[chave_busca]
                 texto += f"[{kid.upper()}]\n"
-                
-                # Campos a serem verificados
                 for campo in ['piso', 'rodape', 'parede', 'teto', 'porta', 'iluminacao']:
                     valor = dados.get(campo)
-                    if valor and valor.strip() != "":
-                        texto += f"{valor}\n"
+                    if valor: texto += f"{valor}\n"
                 texto += "\n"
         return texto
 
-    # Botão de download chamando a função de montagem
     st.download_button(
         label="📥 BAIXAR VISTORIA (.txt)",
         data=montar_relatorio(),
-        file_name=f"Vistoria_{datetime.now().strftime('%Y%m%d_%H%M')}.txt",
+        file_name=f"Vistoria_{datetime.now().strftime('%Y%m%d')}.txt",
         mime="text/plain"
     )
 
