@@ -192,24 +192,52 @@ elif st.session_state.etapa == "detalhamento":
                     material_il = c2.selectbox("Material", ["plástico", "ferro", "vidro"], key=f"il_m_sel_{key_id}")
                 
                 c3, c4 = st.columns(2)
-                qtd_il = c3.number_input("Quantidade", 1, 50, 1, key=f"il_q_num_{key_id}")
-                est_il = c4.selectbox("Estado", ["novo", "usado", "em bom estado"], key=f"il_e_sel_{key_id}")
+                qtd_il = c3.number_input("Quantidade de itens", 1, 50, 1, key=f"il_q_num_{key_id}")
+                est_il = c4.selectbox("Estado do item", ["novo", "usado", "em bom estado"], key=f"il_e_sel_{key_id}")
 
+                # --- NOVA LÓGICA DE LÂMPADAS ---
+                st.write("**Lâmpadas:**")
+                tem_lampada = st.radio("Possui lâmpada?", ["sim", "não"], horizontal=True, key=f"il_l_check_{key_id}")
+                
+                lamp_txt = ""
+                if tem_lampada == "não":
+                    lamp_txt = ", sem lâmpada"
+                else:
+                    l1, l2 = st.columns(2)
+                    qtd_func = l1.number_input("Qtd Funcionando", 0, 50, 0, key=f"il_l_f_{key_id}")
+                    qtd_quei = l2.number_input("Qtd Queimadas", 0, 50, 0, key=f"il_l_q_{key_id}")
+                    
+                    partes_lamp = []
+                    if qtd_func > 0:
+                        p_func = "lâmpada funcionando" if qtd_func == 1 else "lâmpadas funcionando"
+                        partes_lamp.append(f"{str(qtd_func).zfill(2)} {p_func}")
+                    if qtd_quei > 0:
+                        p_quei = "lâmpada queimada" if qtd_quei == 1 else "lâmpadas queimadas"
+                        partes_lamp.append(f"{str(qtd_quei).zfill(2)} {p_quei}")
+                    
+                    if partes_lamp:
+                        lamp_txt = ", sendo " + " e ".join(partes_lamp)
+                    else:
+                        lamp_txt = ", com lâmpadas (não testadas)"
+
+                # Montagem da frase do item
                 nome_item_grafia = tipo_il.lower()
                 if qtd_il > 1:
                     nome_item_grafia = nome_item_grafia.replace("spot", "spots").replace("lustre", "lustres").replace("luminária", "luminárias").replace("lâmpada dicroica", "lâmpadas dicroicas")
                 
                 qtd_f = str(qtd_il).zfill(2)
                 mat_txt = f" de {material_il}" if material_il else ""
-                frase_atual = f"{qtd_f} {nome_item_grafia}{mat_txt} {est_il}"
+                frase_atual = f"{qtd_f} {nome_item_grafia}{mat_txt} {est_il}{lamp_txt}"
                 
                 st.info(f"Visualização: {frase_atual}")
 
+                # Botão de Adicionar
                 qtd_na_lista = len(st.session_state.dados_vistoria[key_id]['iluminacao_itens'])
                 if st.button("➕ Adicionar este e cadastrar outro tipo", key=f"btn_add_il_{key_id}_{qtd_na_lista}"):
                     st.session_state.dados_vistoria[key_id]['iluminacao_itens'].append(frase_atual)
                     st.rerun()
 
+                # Exibição e Limpeza
                 itens_salvos = st.session_state.dados_vistoria[key_id].get('iluminacao_itens', [])
                 if itens_salvos:
                     st.write("**Itens incluídos:**")
