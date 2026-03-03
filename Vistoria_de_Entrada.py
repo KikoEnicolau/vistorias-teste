@@ -11,11 +11,13 @@ st.markdown("""
         text-align: center; font-size: 1.8rem; font-weight: bold;
         border-radius: 0 0 15px 15px; margin-bottom: 30px;
     }
-    .stTabs [data-baseweb="tab-list"] { gap: 10px; }
-    .stTabs [data-baseweb="tab"] {
-        background-color: #e2e8f0; border-radius: 5px; padding: 10px;
+    /* Estilo para os Expanders (setinhas) */
+    .streamlit-expanderHeader {
+        background-color: #ffffff !important;
+        border-radius: 8px !important;
+        font-weight: bold !important;
+        border: 1px solid #e2e8f0 !important;
     }
-    .stTabs [aria-selected="true"] { background-color: #2563eb !important; color: white !important; }
     </style>
     <div class="main-header">🏢 Vistoria Master Pro</div>
     """, unsafe_allow_html=True)
@@ -25,7 +27,6 @@ if 'etapa' not in st.session_state: st.session_state.etapa = "identificacao"
 if 'dados_vistoria' not in st.session_state: st.session_state.dados_vistoria = {}
 if 'comodos_lista' not in st.session_state: st.session_state.comodos_lista = []
 
-# Opções Padrão
 OPCOES_PISO = ["porcelanato", "de cerâmica", "vinílico", "laminado", "de madeira", "frio"]
 OPCOES_ESTADO = ["em bom estado", "novo", "usado"]
 OPCOES_AVARIAS = ["Não", "riscos", "manchas", "trincado"]
@@ -42,8 +43,6 @@ if st.session_state.etapa == "identificacao":
             st.session_state.dados_vistoria['info_geral'] = {"tipo": tipo_res, "endereco": end, "inspetor": inspetor}
             st.session_state.etapa = "composicao"
             st.rerun()
-        else:
-            st.error("Preencha os campos obrigatórios.")
 
 # --- ETAPA 2: COMPOSIÇÃO ---
 elif st.session_state.etapa == "composicao":
@@ -54,7 +53,6 @@ elif st.session_state.etapa == "composicao":
     t_ban = c2.checkbox("Banheiro Social", value=True)
     t_lav = c2.checkbox("Lavanderia", value=True)
     
-    st.write("---")
     col_q, col_s = st.columns(2)
     q_dorm = col_q.number_input("Dormitórios (Simples)", 0, 10, 1)
     q_suit = col_s.number_input("Suítes", 0, 10, 0)
@@ -67,55 +65,46 @@ elif st.session_state.etapa == "composicao":
         if t_lav: lista.append("Lavanderia")
         for i in range(q_dorm): lista.append(f"Dormitório {i+1}")
         for i in range(q_suit):
-            lista.append(f"Suíte {i+1}")
-            lista.append(f"Banheiro Suíte {i+1}")
-        
+            lista.append(f"Suíte {i+1}"); lista.append(f"Banheiro Suíte {i+1}")
         st.session_state.comodos_lista = lista
         st.session_state.etapa = "detalhamento"
         st.rerun()
 
-# --- ETAPA 3: DETALHAMENTO DINÂMICO ---
+# --- ETAPA 3: DETALHAMENTO COM EXPANDERS (SETINHAS) ---
 elif st.session_state.etapa == "detalhamento":
     st.info(f"📍 {st.session_state.dados_vistoria['info_geral']['endereco']}")
     
-    # CRIANDO AS ABAS CONFORME OS CÔMODOS SELECIONADOS
     abas = st.tabs(st.session_state.comodos_lista)
 
     for i, nome_comodo in enumerate(st.session_state.comodos_lista):
         with abas[i]:
-            st.subheader(f"Inspeção: {nome_comodo}")
-            key_id = f"{nome_comodo}_{i}" # Identificador único para cada campo
+            key_id = f"{nome_comodo}_{i}"
             
-            # --- SEÇÃO PISO ---
-            st.markdown("#### 🏗️ Piso")
-            col1, col2, col3 = st.columns(3)
-            tipo_p = col1.selectbox("Tipo de Piso", OPCOES_PISO, key=f"p_t_{key_id}")
-            est_p = col2.selectbox("Estado", OPCOES_ESTADO, key=f"p_e_{key_id}")
-            av_p = col3.selectbox("Avarias", OPCOES_AVARIAS, key=f"p_a_{key_id}")
-            
-            avaria_txt = f" com {av_p}" if av_p != "Não" else ""
-            frase_piso = f"- Piso {tipo_p} {est_p}{avaria_txt}"
-            st.info(f"**Escrita do Piso:** {frase_piso}")
-
-            st.write("---")
-
-            # --- SEÇÃO RODAPÉ ---
-            st.markdown("#### 📐 Rodapé")
-            tem_r = st.radio("Contém Rodapé?", ["sim", "não"], horizontal=True, key=f"r_c_{key_id}")
-            
-            if tem_r == "sim":
-                r1, r2, r3 = st.columns(3)
-                tipo_r = r1.selectbox("Tipo de Rodapé", OPCOES_PISO, key=f"r_t_{key_id}")
-                est_r = r2.selectbox("Estado", OPCOES_ESTADO, key=f"r_e_{key_id}")
-                av_r = r3.selectbox("Avarias", OPCOES_AVARIAS, key=f"r_a_{key_id}")
+            # --- EXPANDER PISO ---
+            with st.expander("🏗️ Inspeção de Piso", expanded=False):
+                c1, c2, c3 = st.columns(3)
+                tipo_p = c1.selectbox("Tipo de Piso", OPCOES_PISO, key=f"p_t_{key_id}")
+                est_p = c2.selectbox("Estado", OPCOES_ESTADO, key=f"p_e_{key_id}")
+                av_p = c3.selectbox("Avarias", OPCOES_AVARIAS, key=f"p_a_{key_id}")
                 
-                avaria_r_txt = f" com {av_r}" if av_r != "Não" else ""
-                # Ajuste conforme seu pedido: "- Rodapé em piso..."
-                frase_rodape = f"- Rodapé em piso {tipo_r} {est_r}{avaria_r_txt}"
-                st.info(f"**Escrita do Rodapé:** {frase_rodape}")
-            else:
-                st.write("*Sem rodapé para este cômodo.*")
+                av_txt = f" com {av_p}" if av_p != "Não" else ""
+                frase_piso = f"- Piso {tipo_p} {est_p}{av_txt}"
+                st.info(f"Escrita: {frase_piso}")
 
-    if st.sidebar.button("⬅️ Reiniciar Composição"):
-        st.session_state.etapa = "composicao"
-        st.rerun()
+            # --- EXPANDER RODAPÉ ---
+            with st.expander("📐 Inspeção de Rodapé", expanded=False):
+                tem_r = st.radio("Contém Rodapé?", ["sim", "não"], horizontal=True, key=f"r_c_{key_id}")
+                if tem_r == "sim":
+                    r1, r2, r3 = st.columns(3)
+                    tipo_r = r1.selectbox("Tipo de Rodapé", OPCOES_PISO, key=f"r_t_{key_id}")
+                    est_r = r2.selectbox("Estado", OPCOES_ESTADO, key=f"r_e_{key_id}")
+                    av_r = r3.selectbox("Avarias", OPCOES_AVARIAS, key=f"r_a_{key_id}")
+                    
+                    av_r_txt = f" com {av_r}" if av_r != "Não" else ""
+                    frase_rodape = f"- Rodapé em piso {tipo_r} {est_r}{av_r_txt}"
+                    st.info(f"Escrita: {frase_rodape}")
+                else:
+                    st.write("Item não existente neste cômodo.")
+
+    if st.sidebar.button("⬅️ Reiniciar"):
+        st.session_state.etapa = "composicao"; st.rerun()
